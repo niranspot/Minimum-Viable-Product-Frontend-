@@ -1,0 +1,88 @@
+import { createSlice } from '@reduxjs/toolkit';
+
+const initialState = {
+  list:    [],
+  loading: false,
+  error:   null,
+  success: null,
+};
+
+const patientSlice = createSlice({
+  name: 'patients',
+  initialState,
+  reducers: {
+    // Fetch list
+    fetchPatientsRequest: (state) => {
+      state.loading = true;
+      state.error   = null;
+    },
+    fetchPatientsSuccess: (state, action) => {
+      state.loading = false;
+      state.list    = action.payload;
+    },
+    fetchPatientsFailure: (state, action) => {
+      state.loading = false;
+      state.error   = action.payload;
+    },
+
+    // Create
+    createPatientRequest: (state) => {
+      state.loading = true;
+      state.error   = null;
+      state.success  = null;
+    },
+    createPatientSuccess: (state, action) => {
+      state.loading = false;
+      state.success  = 'Patient created successfully';
+    },
+    createPatientFailure: (state, action) => {
+      state.loading = false;
+      state.error   = action.payload;
+    },
+
+    // Update
+    updatePatientRequest: (state) => {
+      state.loading = true;
+      state.error   = null;
+      state.success  = null;
+    },
+    updatePatientSuccess: (state) => {
+      state.loading = false;
+      state.success  = 'Patient updated successfully';
+    },
+    updatePatientFailure: (state, action) => {
+      state.loading = false;
+      state.error   = action.payload;
+    },
+
+    // Delete
+    deletePatientRequest: (state) => {
+      state.loading = true;
+      state.error   = null;
+      state.success  = null;
+    },
+    deletePatientSuccess: (state) => {
+      state.loading = false;
+      state.success  = 'Patient deleted successfully';
+    },
+    deletePatientFailure: (state, action) => {
+      state.loading = false;
+      state.error   = action.payload;
+    },
+
+    clearPatientStatus: (state) => {
+      state.error   = null;
+      state.success  = null;
+    },
+  },
+});
+
+export const {
+  fetchPatientsRequest, fetchPatientsSuccess, fetchPatientsFailure,
+  createPatientRequest, createPatientSuccess, createPatientFailure,
+  updatePatientRequest, updatePatientSuccess, updatePatientFailure,
+  deletePatientRequest, deletePatientSuccess, deletePatientFailure,
+  clearPatientStatus,
+} = patientSlice.actions;
+
+export default patientSlice.reducer;
