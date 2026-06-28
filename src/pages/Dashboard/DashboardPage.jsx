@@ -1,17 +1,23 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 import {
-  Box, Typography, Grid, CircularProgress, Alert, Divider, Chip,
-} from '@mui/material';
-import { Table, Tag } from 'antd';
-import PeopleIcon      from '@mui/icons-material/People';
-import EventIcon       from '@mui/icons-material/Event';
-import MedicalIcon     from '@mui/icons-material/MedicalServices';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import HourglassIcon   from '@mui/icons-material/HourglassEmpty';
-import CancelIcon      from '@mui/icons-material/Cancel';
-import styled          from 'styled-components';
-import useDashboard    from '../../modules/dashboard/hooks/useDashboard';
-import { useSelector } from 'react-redux';
+  Box,
+  Typography,
+  Grid,
+  CircularProgress,
+  Alert,
+  Divider,
+  Chip,
+} from "@mui/material";
+import { Table, Tag } from "antd";
+import PeopleIcon from "@mui/icons-material/People";
+import EventIcon from "@mui/icons-material/Event";
+import MedicalIcon from "@mui/icons-material/MedicalServices";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import HourglassIcon from "@mui/icons-material/HourglassEmpty";
+import CancelIcon from "@mui/icons-material/Cancel";
+import styled from "styled-components";
+import useDashboard from "../../modules/dashboard/hooks/useDashboard";
+import { useSelector } from "react-redux";
 
 // ── Styled ─────────────────────────────────────────────────────
 const PageWrapper = styled.div`
@@ -27,10 +33,12 @@ const SummaryCard = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   }
 `;
 
@@ -38,7 +46,7 @@ const IconBox = styled.div`
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -68,14 +76,14 @@ const StatusRow = styled.div`
 // ── Table columns for per-day appointments ────────────────────
 const perDayColumns = [
   {
-    title: 'Date',
-    dataIndex: 'date',
-    key: 'date',
+    title: "Date",
+    dataIndex: "date",
+    key: "date",
   },
   {
-    title: 'Appointments',
-    dataIndex: 'count',
-    key: 'count',
+    title: "Appointments",
+    dataIndex: "count",
+    key: "count",
     render: (v) => <Tag color="blue">{v}</Tag>,
   },
 ];
@@ -83,41 +91,102 @@ const perDayColumns = [
 // ── Table columns for per-doctor ──────────────────────────────
 const perDoctorColumns = [
   {
-    title: 'Doctor',
-    dataIndex: 'doctor_name',
-    key: 'doctor_name',
-    render: (v) => <Typography variant="body2" fontWeight={600}>{v}</Typography>,
+    title: "Doctor",
+    dataIndex: "doctor_name",
+    key: "doctor_name",
+    render: (v) => (
+      <Typography variant="body2" fontWeight={600}>
+        {v}
+      </Typography>
+    ),
   },
   {
-    title: 'Total',
-    dataIndex: 'total',
-    key: 'total',
+    title: "Total",
+    dataIndex: "total",
+    key: "total",
     render: (v) => <Tag color="blue">{v}</Tag>,
   },
   {
-    title: 'Completed',
-    dataIndex: 'completed',
-    key: 'completed',
+    title: "Completed",
+    dataIndex: "completed",
+    key: "completed",
     render: (v) => <Tag color="green">{v}</Tag>,
   },
   {
-    title: 'Cancelled',
-    dataIndex: 'cancelled',
-    key: 'cancelled',
+    title: "Cancelled",
+    dataIndex: "cancelled",
+    key: "cancelled",
     render: (v) => <Tag color="red">{v}</Tag>,
   },
 ];
 
+const perPrescriptionDoctorColumns = [
+  {
+    title: "Doctor",
+    dataIndex: "doctor_name",
+    key: "doctor_name",
+    render: (v) => (
+      <Typography variant="body2" fontWeight={600}>
+        {v}
+      </Typography>
+    ),
+  },
+  {
+    title: "Created",
+    dataIndex: "created",
+    key: "created",
+    render: (v) => <Tag color="blue">{v}</Tag>,
+  },
+  {
+    title: "Verified",
+    dataIndex: "verified",
+    key: "verified",
+    render: (v) => <Tag color="orange">{v}</Tag>,
+  },
+  {
+    title: "Dispensed",
+    dataIndex: "dispensed",
+    key: "dispensed",
+    render: (v) => <Tag color="green">{v}</Tag>,
+  },
+];
+
+// Pivots [{ status, count, doctor_name, doctor_id }, ...] into
+// [{ doctor_id, doctor_name, created, verified, dispensed }, ...]
+const buildPrescriptionRows = (byStatusAndDoctor = []) => {
+  const byDoctor = {};
+  byStatusAndDoctor.forEach((row) => {
+    const key = row.doctor_id;
+    if (!byDoctor[key]) {
+      byDoctor[key] = {
+        doctor_id: row.doctor_id,
+        doctor_name: row.doctor_name,
+        created: 0,
+        verified: 0,
+        dispensed: 0,
+      };
+    }
+    if (byDoctor[key][row.status] !== undefined)
+      byDoctor[key][row.status] = row.count;
+  });
+  return Object.values(byDoctor);
+};
+
 // ── Component ──────────────────────────────────────────────────
 const DashboardPage = () => {
   const {
-    summary, appointments, prescriptions,
-    tenantAnalytics, loading, error,
-    fetchDashboard, fetchTenantAnalytics,
+    summary,
+    appointments,
+    prescriptions,
+    tenantAnalytics,
+    loading,
+    error,
+    fetchDashboard,
+    fetchTenantAnalytics,
   } = useDashboard();
 
-  const { user }  = useSelector((s) => s.auth);
-  const isAdmin   = user?.role === 'admin';
+  const { user } = useSelector((s) => s.auth);
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
     fetchDashboard();
@@ -126,48 +195,62 @@ const DashboardPage = () => {
 
   if (loading && !summary) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: 300,
+        }}
+      >
         <CircularProgress />
       </Box>
     );
   }
 
-  const apptStats  = summary?.appointment_stats   || {};
-  const rxSummary  = summary?.prescription_summary || {};
+  const apptStats = summary?.appointment_stats || {};
+  const rxSummary = summary?.prescription_summary || {};
 
   const statCards = [
     {
-      label: 'Total Patients',
-      value: summary?.total_patients ?? '—',
-      icon:  <PeopleIcon />,
-      bg:    '#1565C0',
+      label: "Total Patients",
+      value: summary?.total_patients ?? "—",
+      icon: <PeopleIcon />,
+      bg: "#1565C0",
     },
     {
-      label: 'Total Appointments',
-      value: apptStats.total ?? '—',
-      icon:  <EventIcon />,
-      bg:    '#1B8A5A',
+      label: "Total Appointments",
+      value: apptStats.total ?? "—",
+      icon: <EventIcon />,
+      bg: "#1B8A5A",
     },
     {
-      label: 'Total Prescriptions',
-      value: rxSummary.total ?? '—',
-      icon:  <MedicalIcon />,
-      bg:    '#7B1FA2',
+      label: "Total Prescriptions",
+      value: rxSummary.total ?? "—",
+      icon: <MedicalIcon />,
+      bg: "#7B1FA2",
     },
     {
-      label: 'Completed Appointments',
-      value: apptStats.completed ?? '—',
-      icon:  <CheckCircleIcon />,
-      bg:    '#2E7D32',
+      label: "Completed Appointments",
+      value: apptStats.completed ?? "—",
+      icon: <CheckCircleIcon />,
+      bg: "#2E7D32",
     },
   ];
 
-  const perDay    = appointments?.per_day    || [];
+  const perDay = appointments?.per_day || [];
   const perDoctor = appointments?.per_doctor || [];
+  const perPrescriptionDoctor = buildPrescriptionRows(
+    prescriptions?.by_status_and_doctor,
+  );
 
   return (
     <PageWrapper>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
 
       {/* ── Top Summary Cards ──────────────────────────────── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
@@ -177,10 +260,23 @@ const DashboardPage = () => {
             <SummaryCard bg={s.bg}>
               <IconBox>{s.icon}</IconBox>
               <Box>
-                <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#fff', lineHeight: 1 }}>
+                <Typography
+                  sx={{
+                    fontSize: 28,
+                    fontWeight: 700,
+                    color: "#fff",
+                    lineHeight: 1,
+                  }}
+                >
                   {s.value}
                 </Typography>
-                <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', mt: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    color: "rgba(255,255,255,0.85)",
+                    mt: 0.5,
+                  }}
+                >
                   {s.label}
                 </Typography>
               </Box>
@@ -197,42 +293,54 @@ const DashboardPage = () => {
             <SectionTitle variant="h6">Appointment Status</SectionTitle>
 
             <StatusRow>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <HourglassIcon sx={{ color: '#F59E0B', fontSize: 18 }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <HourglassIcon sx={{ color: "#F59E0B", fontSize: 18 }} />
                 <Typography variant="body2">Pending</Typography>
               </Box>
-              <Chip label={apptStats.pending ?? 0} size="small"
-                sx={{ bgcolor: '#FFF3E0', color: '#E65100', fontWeight: 700 }} />
+              <Chip
+                label={apptStats.pending ?? 0}
+                size="small"
+                sx={{ bgcolor: "#FFF3E0", color: "#E65100", fontWeight: 700 }}
+              />
             </StatusRow>
             <Divider />
 
             <StatusRow>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <EventIcon sx={{ color: '#1565C0', fontSize: 18 }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <EventIcon sx={{ color: "#1565C0", fontSize: 18 }} />
                 <Typography variant="body2">Confirmed</Typography>
               </Box>
-              <Chip label={apptStats.confirmed ?? 0} size="small"
-                sx={{ bgcolor: '#E3F2FD', color: '#1565C0', fontWeight: 700 }} />
+              <Chip
+                label={apptStats.confirmed ?? 0}
+                size="small"
+                sx={{ bgcolor: "#E3F2FD", color: "#1565C0", fontWeight: 700 }}
+              />
             </StatusRow>
             <Divider />
 
             <StatusRow>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CheckCircleIcon sx={{ color: '#2E7D32', fontSize: 18 }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CheckCircleIcon sx={{ color: "#2E7D32", fontSize: 18 }} />
                 <Typography variant="body2">Completed</Typography>
               </Box>
-              <Chip label={apptStats.completed ?? 0} size="small"
-                sx={{ bgcolor: '#E8F5E9', color: '#2E7D32', fontWeight: 700 }} />
+              <Chip
+                label={apptStats.completed ?? 0}
+                size="small"
+                sx={{ bgcolor: "#E8F5E9", color: "#2E7D32", fontWeight: 700 }}
+              />
             </StatusRow>
             <Divider />
 
             <StatusRow>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CancelIcon sx={{ color: '#C62828', fontSize: 18 }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CancelIcon sx={{ color: "#C62828", fontSize: 18 }} />
                 <Typography variant="body2">Cancelled</Typography>
               </Box>
-              <Chip label={apptStats.cancelled ?? 0} size="small"
-                sx={{ bgcolor: '#FFEBEE', color: '#C62828', fontWeight: 700 }} />
+              <Chip
+                label={apptStats.cancelled ?? 0}
+                size="small"
+                sx={{ bgcolor: "#FFEBEE", color: "#C62828", fontWeight: 700 }}
+              />
             </StatusRow>
           </DataCard>
         </Grid>
@@ -248,7 +356,7 @@ const DashboardPage = () => {
               pagination={false}
               size="small"
               loading={loading}
-              locale={{ emptyText: 'No appointment data yet' }}
+              locale={{ emptyText: "No appointment data yet" }}
             />
           </DataCard>
         </Grid>
@@ -266,10 +374,28 @@ const DashboardPage = () => {
               pagination={false}
               size="small"
               loading={loading}
-              locale={{ emptyText: 'No doctor data yet' }}
+              locale={{ emptyText: "No doctor data yet" }}
               scroll={{ x: 400 }}
             />
           </DataCard>
+        </Grid>
+
+        <Grid container spacing={2.5} sx={{ mb: 3 }}>
+          <Grid item xs={12}>
+            <DataCard>
+              <SectionTitle variant="h6">Prescriptions by Doctor</SectionTitle>
+              <Table
+                dataSource={perPrescriptionDoctor}
+                columns={perPrescriptionDoctorColumns}
+                rowKey="doctor_id"
+                pagination={false}
+                size="small"
+                loading={loading}
+                locale={{ emptyText: "No prescription data yet" }}
+                scroll={{ x: 400 }}
+              />
+            </DataCard>
+          </Grid>
         </Grid>
 
         {/* Admin only: tenant analytics */}
@@ -278,28 +404,63 @@ const DashboardPage = () => {
             <DataCard>
               <SectionTitle variant="h6">Tenant Analytics</SectionTitle>
               {tenantAnalytics.tenants.map((t) => (
-                <Box key={t.tenant_id} sx={{
-                  p: 1.5, mb: 1,
-                  border: '1px solid', borderColor: 'divider',
-                  borderRadius: 2,
-                }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                    <Typography variant="body2" fontWeight={700}>{t.tenant_name}</Typography>
+                <Box
+                  key={t.tenant_id}
+                  sx={{
+                    p: 1.5,
+                    mb: 1,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    borderRadius: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography variant="body2" fontWeight={700}>
+                      {t.tenant_name}
+                    </Typography>
                     <Chip
                       label={t.tenant_status}
                       size="small"
                       sx={{
-                        bgcolor: t.tenant_status === 'active' ? '#E8F5E9' : '#FFEBEE',
-                        color:   t.tenant_status === 'active' ? '#2E7D32'  : '#C62828',
-                        fontWeight: 600, fontSize: 10,
+                        bgcolor:
+                          t.tenant_status === "active" ? "#E8F5E9" : "#FFEBEE",
+                        color:
+                          t.tenant_status === "active" ? "#2E7D32" : "#C62828",
+                        fontWeight: 600,
+                        fontSize: 10,
                       }}
                     />
                   </Box>
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip label={`${t.total_patients} patients`}      size="small" color="primary"  variant="outlined" />
-                    <Chip label={`${t.total_appointments} appts`}     size="small" color="success"  variant="outlined" />
-                    <Chip label={`${t.total_prescriptions} rx`}       size="small" color="secondary" variant="outlined" />
-                    <Chip label={`${t.active_users} users`}           size="small" variant="outlined" />
+                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                    <Chip
+                      label={`${t.total_patients} patients`}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                    <Chip
+                      label={`${t.total_appointments} appts`}
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                    />
+                    <Chip
+                      label={`${t.total_prescriptions} rx`}
+                      size="small"
+                      color="secondary"
+                      variant="outlined"
+                    />
+                    <Chip
+                      label={`${t.active_users} users`}
+                      size="small"
+                      variant="outlined"
+                    />
                   </Box>
                 </Box>
               ))}
