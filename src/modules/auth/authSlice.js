@@ -1,14 +1,19 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  user: null,       // { user_id, role }
+  user: null, // { user_id, role }
   isAuthenticated: false,
   loading: false,
   error: null,
+  // True once the one-time startup session check (csrf + token validate/refresh)
+  // has finished, regardless of outcome. ProtectedRoute waits for this before
+  // deciding to redirect — otherwise it can briefly read isAuthenticated=false
+  // before restoreSession's dispatch lands, flashing the login page.
+  sessionChecked: false,
 };
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState,
   reducers: {
     // Login
@@ -45,6 +50,13 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
     },
 
+    // Marks the startup session check as finished (success, failure, or no
+    // token at all). Dispatched once from useAppInit, after restoreSession
+    // (if any) has already been dispatched.
+    sessionCheckComplete: (state) => {
+      state.sessionChecked = true;
+    },
+
     clearError: (state) => {
       state.error = null;
     },
@@ -58,6 +70,7 @@ export const {
   logoutRequest,
   logoutSuccess,
   restoreSession,
+  sessionCheckComplete,
   clearError,
 } = authSlice.actions;
 

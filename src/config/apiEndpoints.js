@@ -1,4 +1,4 @@
-const BASE = 'http://localhost/newphp1/Php_Tasks/012MinimumViableProduct/public';
+const BASE = 'http://localhost/MVP/public/';
 
 export const API_BASE = BASE;
 
@@ -8,4 +8,23 @@ export const ENDPOINTS = {
   REGISTER:        '/register',
   REFRESH_TOKEN:   '/refresh-token',
   CHANGE_PASSWORD: '/change-password',
+
+  // Billing
+  BILLING:         '/billing',              // POST (create), GET (list)
+  BILLING_BY_ID:   (id) => `/billing/${id}`, // PUT (update payment status)
+
+  // Communication (appointment notes / messages)
+  MESSAGES:                '/messages',                                  // POST (create)
+  MESSAGES_BY_APPOINTMENT: (appointmentId) => `/messages/${appointmentId}`, // GET (list)
+
+  // Prescriptions
+  PRESCRIPTIONS:            '/prescriptions',                       // POST (create), GET (list)
+  PRESCRIPTION_BY_ID:       (id) => `/prescriptions/${id}`,         // GET, PUT, DELETE
+  PRESCRIPTION_STATUS:      (id) => `/prescriptions/${id}/status`, // PATCH (status update)
+  PATIENT_PRESCRIPTIONS:    (patientId) => `/patients/${patientId}/prescriptions`,         // GET
+  APPOINTMENT_PRESCRIPTION: (appointmentId) => `/appointments/${appointmentId}/prescriptions`, // GET
+
+  // Staff
+  STAFF:         '/staff',               // POST (create), GET (list)
+  STAFF_BY_ID:   (id) => `/staff/${id}`, // GET, PUT (update), DELETE
 };

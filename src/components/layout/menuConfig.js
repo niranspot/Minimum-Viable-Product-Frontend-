@@ -6,6 +6,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import MedicationIcon from '@mui/icons-material/Medication';
 
 export const menuItems = [
   {
@@ -49,6 +50,13 @@ export const menuItems = [
     icon: <ReceiptIcon />,
     path: '/dashboard/billing',
     roles: ['admin', 'pharmacist'],
+  },
+   {
+    key: 'prescriptions',
+    label: 'Prescriptions',
+    icon: <MedicationIcon />,
+    path: '/dashboard/prescriptions',
+    roles: ['admin', 'doctor', 'pharmacist'],
   },
   {
     key: 'calendar',
