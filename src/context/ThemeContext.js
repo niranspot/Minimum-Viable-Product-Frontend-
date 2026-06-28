@@ -8,6 +8,7 @@ import { lightTheme, darkTheme } from '../themes/theme';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
+  
   const [mode, setMode] = useState(
     localStorage.getItem('theme') || 'light'
   );

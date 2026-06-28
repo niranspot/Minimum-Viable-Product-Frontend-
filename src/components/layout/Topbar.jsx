@@ -35,7 +35,9 @@ const Topbar = ({ sidebarOpen }) => {
   const currentPage = menuItems.find((i) => i.path === location.pathname)?.label || 'Dashboard';
 
   return (
+
     <AppBar
+    // square={false}
       position="fixed"
       elevation={0}
       sx={{
