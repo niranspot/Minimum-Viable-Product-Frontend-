@@ -169,7 +169,7 @@ const PatientsPage = () => {
       render: (name, rec) => (
         <Box>
           <Typography variant="body2" fontWeight={600}>{name || '—'}</Typography>
-          <Typography variant="caption" color="text.secondary">{rec.email}</Typography>
+          <Typography variant="caption" sx={{color:"text.secondary"}}>{rec.email}</Typography>
         </Box>
       ),
     },

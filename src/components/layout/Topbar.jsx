@@ -3,10 +3,11 @@ import {
   AppBar, Toolbar, Typography, Box,
   IconButton, Tooltip, Chip
 } from '@mui/material';
-import LogoutIcon       from '@mui/icons-material/Logout';
+import LogoutIcon        from '@mui/icons-material/Logout';
 import DarkModeIcon     from '@mui/icons-material/DarkMode';
 import LightModeIcon    from '@mui/icons-material/LightMode';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import MenuIcon          from '@mui/icons-material/Menu';
 import { useSelector }  from 'react-redux';
 import useAuth          from '../../modules/auth/hooks/useAuth';
 import { useThemeMode } from '../../context/ThemeContext';
@@ -24,23 +25,27 @@ const roleColors = {
   pharmacist:   '#C62828',
 };
 
-const Topbar = ({ sidebarOpen }) => {
-  const { user }       = useSelector((state) => state.auth);
-  const { logout }     = useAuth();
+const Topbar = ({ sidebarOpen, isMobile, onMobileToggle }) => {
+  const { user }              = useSelector((state) => state.auth);
+  const { logout }            = useAuth();
   const { mode, toggleTheme } = useThemeMode();
-  const location       = useLocation();
-  const role           = user?.role || '';
+  const location              = useLocation();
+  const role                  = user?.role || '';
 
   // Get current page label
   const currentPage = menuItems.find((i) => i.path === location.pathname)?.label || 'Dashboard';
+
+  // Calculate dynamic width and margins based on device type
+  const appBarWidth = isMobile ? '100%' : `calc(100% - ${sidebarOpen ? OPEN : CLOSED}px)`;
+  const appBarMarginLeft = isMobile ? 0 : `${sidebarOpen ? OPEN : CLOSED}px`;
 
   return (
     <AppBar
       position="fixed"
       elevation={0}
       sx={{
-        width: `calc(100% - ${sidebarOpen ? OPEN : CLOSED}px)`,
-        ml: `${sidebarOpen ? OPEN : CLOSED}px`,
+        width: appBarWidth,
+        ml: appBarMarginLeft,
         transition: 'width 0.25s ease, margin-left 0.25s ease',
         bgcolor: 'background.paper',
         borderBottom: '1px solid',
@@ -49,27 +54,38 @@ const Topbar = ({ sidebarOpen }) => {
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between', minHeight: '56px !important' }}>
-        <Box>
-          <Typography variant="h3" fontWeight={700}>
-            {currentPage}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Today: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-          </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          {/* Hamburger menu visible ONLY on mobile */}
+          {isMobile && (
+            <IconButton onClick={onMobileToggle} sx={{ color: 'text.primary', p: 0.5 }}>
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Box>
+            {/* Tweaked down to h6 for correct AppBar visual balance */}
+            <Typography variant="h6" fontWeight={700} sx={{lineHeight:1.2}}>
+              {currentPage}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" display="block">
+              Today: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </Typography>
+          </Box>
         </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Chip
-            label={role.charAt(0).toUpperCase() + role.slice(1)}
-            size="small"
-            sx={{
-              bgcolor: `${roleColors[role]}22`,
-              color: roleColors[role] || '#3B82F6',
-              fontWeight: 600,
-              fontSize: 11,
-              height: 24,
-            }}
-          />
+          {role && (
+            <Chip
+              label={role.charAt(0).toUpperCase() + role.slice(1)}
+              size="small"
+              sx={{
+                bgcolor: `${roleColors[role] || '#3B82F6'}22`, // Safeguarded fallback
+                color: roleColors[role] || '#3B82F6',
+                fontWeight: 600,
+                fontSize: 11,
+                height: 24,
+              }}
+            />
+          )}
 
           <Tooltip title="Notifications">
             <IconButton size="small" sx={{ color: 'text.secondary' }}>

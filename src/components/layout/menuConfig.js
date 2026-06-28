@@ -27,7 +27,7 @@ export const menuItems = [
     label: 'Patients',
     icon: <PersonIcon />,
     path: '/dashboard/patients',
-    roles: ['admin', 'doctor', 'nurse'],
+    roles: ['admin', 'doctor', 'nurse','patient'],
   },
   {
     key: 'appointments',

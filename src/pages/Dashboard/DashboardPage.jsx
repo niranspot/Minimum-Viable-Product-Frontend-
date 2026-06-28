@@ -122,7 +122,7 @@ const DashboardPage = () => {
   useEffect(() => {
     fetchDashboard();
     if (isAdmin) fetchTenantAnalytics();
-  }, []);
+  }, [isAdmin]);
 
   if (loading && !summary) {
     return (
@@ -132,13 +132,9 @@ const DashboardPage = () => {
     );
   }
 
-  // ── Pull from correct nested keys ─────────────────────────
-  // summary.appointment_stats  = { total, pending, confirmed, cancelled, completed }
-  // summary.prescription_summary = { total, created, verified, dispensed }
   const apptStats  = summary?.appointment_stats   || {};
   const rxSummary  = summary?.prescription_summary || {};
 
-  // ── Top stat cards ────────────────────────────────────────
   const statCards = [
     {
       label: 'Total Patients',
@@ -166,19 +162,18 @@ const DashboardPage = () => {
     },
   ];
 
-  // ── Per-day and per-doctor from /dashboard/appointments ───
   const perDay    = appointments?.per_day    || [];
   const perDoctor = appointments?.per_doctor || [];
 
   return (
     <PageWrapper>
-
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {/* ── Top Summary Cards ──────────────────────────────── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         {statCards.map((s) => (
-          <Grid key={s.label} size={{ xs: 12, sm: 6, md: 3 }}>
+          /* Fixed grid format: break elements up into core props directly */
+          <Grid key={s.label} item xs={12} sm={6} md={3}>
             <SummaryCard bg={s.bg}>
               <IconBox>{s.icon}</IconBox>
               <Box>
@@ -196,11 +191,10 @@ const DashboardPage = () => {
 
       {/* ── Appointment Status Breakdown + Per Day ─────────── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
-
-        {/* Appointment status breakdown — reads from appointment_stats */}
-        <Grid size={{ xs: 12, md: 4 }}>
+        {/* Appointment status breakdown */}
+        <Grid item xs={12} md={4}>
           <DataCard>
-            <SectionTitle variant="h4">Appointment Status</SectionTitle>
+            <SectionTitle variant="h6">Appointment Status</SectionTitle>
 
             <StatusRow>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -240,14 +234,13 @@ const DashboardPage = () => {
               <Chip label={apptStats.cancelled ?? 0} size="small"
                 sx={{ bgcolor: '#FFEBEE', color: '#C62828', fontWeight: 700 }} />
             </StatusRow>
-
           </DataCard>
         </Grid>
 
         {/* Appointments per day */}
-        <Grid size={{ xs: 12, md: 8 }}>
+        <Grid item xs={12} md={8}>
           <DataCard>
-            <SectionTitle variant="h4">Appointments Per Day</SectionTitle>
+            <SectionTitle variant="h6">Appointments Per Day</SectionTitle>
             <Table
               dataSource={perDay}
               columns={perDayColumns}
@@ -259,15 +252,13 @@ const DashboardPage = () => {
             />
           </DataCard>
         </Grid>
-
       </Grid>
 
       {/* ── Per Doctor + Admin Tenant Analytics ───────────── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
-
-        <Grid size={{ xs: 12, md: isAdmin ? 6 : 12 }}>
+        <Grid item xs={12} md={isAdmin ? 6 : 12}>
           <DataCard>
-            <SectionTitle variant="h4">Appointments by Doctor</SectionTitle>
+            <SectionTitle variant="h6">Appointments by Doctor</SectionTitle>
             <Table
               dataSource={perDoctor}
               columns={perDoctorColumns}
@@ -283,9 +274,9 @@ const DashboardPage = () => {
 
         {/* Admin only: tenant analytics */}
         {isAdmin && tenantAnalytics?.tenants && (
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid item xs={12} md={6}>
             <DataCard>
-              <SectionTitle variant="h4">Tenant Analytics</SectionTitle>
+              <SectionTitle variant="h6">Tenant Analytics</SectionTitle>
               {tenantAnalytics.tenants.map((t) => (
                 <Box key={t.tenant_id} sx={{
                   p: 1.5, mb: 1,
@@ -315,9 +306,7 @@ const DashboardPage = () => {
             </DataCard>
           </Grid>
         )}
-
       </Grid>
-
     </PageWrapper>
   );
 };

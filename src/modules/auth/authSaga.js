@@ -27,9 +27,19 @@ function* handleLogin(action) {
     }));
 
   } catch (error) {
-    yield put(loginFailure(
-      error.response?.data?.message || 'Login failed. Please try again.'
-    ));
+  const status  = error.response?.status;
+  const message = error.response?.data?.message;
+
+  let errorMsg = 'Login failed. Please try again.';
+
+  if (status === 401 || message?.toLowerCase().includes('invalid')) {
+    errorMsg = 'Invalid credentials';
+  } else if (message) {
+    errorMsg = message;
+  }
+
+  yield put(loginFailure(errorMsg));
+
   }
 }
 

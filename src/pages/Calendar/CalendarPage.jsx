@@ -16,6 +16,8 @@ const CalendarCard = styled.div`
   border: 1px solid ${({ theme }) => theme.divider};
   border-radius: 12px;
   padding: 20px;
+  position: relative; /* Context helper for overlay loading states */
+  
   .ant-picker-calendar {
     background: transparent;
   }
@@ -36,7 +38,7 @@ const EventPopover = styled.div`
   margin-top: 16px;
 `;
 
-// ── Status → antd badge status ─────────────────────────────────
+// ── Status Configurations ──────────────────────────────────────
 const badgeStatus = {
   pending:   'warning',
   confirmed: 'processing',
@@ -44,7 +46,6 @@ const badgeStatus = {
   cancelled: 'error',
 };
 
-// ── Status → MUI chip colors ───────────────────────────────────
 const chipStyle = {
   pending:   { bg: '#FFF3E0', color: '#E65100' },
   confirmed: { bg: '#E3F2FD', color: '#1565C0' },
@@ -58,21 +59,19 @@ const fmt = (d) => dayjs(d).format('YYYY-MM-DD');
 const CalendarPage = () => {
   const { events, loading, error, fetchCalendar } = useCalendar();
 
-  // `value` is the controlled date the calendar is showing
-  const [value,        setValue]        = useState(dayjs());
+  const [value, setValue]               = useState(dayjs());
   const [selectedDate, setSelectedDate] = useState(null);
-  // Track which month we last fetched so we don't double-fetch
   const [fetchedMonth, setFetchedMonth] = useState(null);
 
   // ── Fetch whenever the displayed month changes ───────────────
   useEffect(() => {
     const monthKey = value.format('YYYY-MM');
-    if (monthKey === fetchedMonth) return; // already fetched this month
+    if (monthKey === fetchedMonth) return; 
     const from = value.startOf('month').format('YYYY-MM-DD');
     const to   = value.endOf('month').format('YYYY-MM-DD');
     fetchCalendar(from, to);
     setFetchedMonth(monthKey);
-  }, [value]);
+  }, [value, fetchedMonth, fetchCalendar]);
 
   // ── Build events map keyed by YYYY-MM-DD ─────────────────────
   const eventsByDate = {};
@@ -84,25 +83,13 @@ const CalendarPage = () => {
 
   const selectedEvents = selectedDate ? (eventsByDate[selectedDate] || []) : [];
 
-  // ── antd v6 key handler ──────────────────────────────────────
-  // onPanelChange fires when: user clicks prev/next month arrows,
-  // or switches between month/year mode in the header picker.
-  // `date`  = the new dayjs value of the panel
-  // `mode`  = 'month' | 'year'
-  const handlePanelChange = (date, mode) => {
-    setValue(date); // this triggers the useEffect above to fetch if new month
+  const handlePanelChange = (date) => {
+    setValue(date); 
   };
 
-  // onSelect fires when user clicks a date cell
-  // BUT it also fires when the header dropdowns change month/year
-  // so we guard: only treat it as a date select when mode is 'month'
   const handleSelect = (date, { source }) => {
-    // source is 'date' when clicking a real day cell
-    // source is 'month'/'year' when using header controls
     if (source === 'date') {
       setSelectedDate(date.format('YYYY-MM-DD'));
-      // If the clicked date is in a different month (prev/next month overflow cells),
-      // update the panel value so the calendar navigates there
       if (!date.isSame(value, 'month')) {
         setValue(date);
       }
@@ -118,7 +105,7 @@ const CalendarPage = () => {
     return (
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {list.slice(0, 2).map((item, i) => (
-          <li key={i}>
+          <li key={i} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             <Badge
               status={badgeStatus[item.status] || 'default'}
               text={
@@ -131,7 +118,7 @@ const CalendarPage = () => {
           </li>
         ))}
         {list.length > 2 && (
-          <li style={{ fontSize: 10, color: '#718096' }}>+{list.length - 2} more</li>
+          <li style={{ fontSize: 10, color: '#718096', paddingLeft: '8px' }}>+{list.length - 2} more</li>
         )}
       </ul>
     );
@@ -154,26 +141,24 @@ const CalendarPage = () => {
       </LegendRow>
 
       <CalendarCard>
-        {loading && !events.length ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-            <Spin size="large" />
-          </Box>
-        ) : (
+        {/* AntD Spin natively covers the node structure smoothly without unmounting */}
+        <Spin spinning={loading && !events.length} size="large" description="Loading appointments...">
           <Calendar
-            value={value}                      // ← controlled: calendar always shows this month
-            cellRender={cellRender}            // ← antd v6 uses cellRender not dateCellRender
-            onPanelChange={handlePanelChange}  // ← fires on prev/next month + header picker change
-            onSelect={handleSelect}            // ← fires on date cell click, source tells us what
+            value={value}
+            cellRender={cellRender}
+            onPanelChange={handlePanelChange}
+            onSelect={handleSelect}
           />
-        )}
+        </Spin>
 
         {/* Selected day detail */}
         {selectedDate && (
           <EventPopover>
-            <Typography variant="h4" fontWeight={700} mb={1.5}>
+            {/* Swapped variant h4 to h6 for correct typographic weighting */}
+            <Typography variant="h6" fontWeight={700} mb={1.5} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {dayjs(selectedDate).format('D MMMM YYYY')}
-              <Typography component="span" variant="body2" color="text.secondary" ml={1}>
-                {selectedEvents.length} appointment{selectedEvents.length !== 1 ? 's' : ''}
+              <Typography component="span" variant="body2" color="text.secondary">
+                ({selectedEvents.length} appointment{selectedEvents.length !== 1 ? 's' : ''})
               </Typography>
             </Typography>
 
