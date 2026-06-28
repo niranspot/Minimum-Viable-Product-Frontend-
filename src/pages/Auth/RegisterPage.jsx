@@ -5,26 +5,11 @@ import {
   Alert, CircularProgress, MenuItem
 } from '@mui/material';
 import { Visibility, VisibilityOff, LocalHospital, ArrowBack } from '@mui/icons-material';
-import styled from 'styled-components';
+import { PageWrapper, StyledCard, LogoBox } from '../../styles/auth.styles';
 import { tokens } from '../../themes/theme';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../../services/axiosClient';
 
-const PageWrapper = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 60%, ${tokens.dark} 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledCard = styled(Card)`
-  width: 100%;
-  max-width: 440px;
-  border-radius: 16px !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
-`;
 
 const ROLES = [
   { value: 'admin',        label: 'Admin' },
@@ -125,14 +110,16 @@ const RegisterPage = () => {
               onChange={handleChange('password')}
               sx={{ mb: 2 }}
               disabled={loading}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword( !showPassword )} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                },
               }}
             />
 

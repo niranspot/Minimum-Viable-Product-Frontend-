@@ -2,6 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchPrescriptionsRequest,
   createPrescriptionRequest,
+  updatePrescriptionRequest,
   updatePrescriptionStatusRequest,
   deletePrescriptionRequest,
   clearPrescriptionError,
@@ -19,6 +20,10 @@ const usePrescriptions = () => {
 
   const createPrescription = (data) => {
     dispatch(createPrescriptionRequest(data));
+  };
+
+  const updatePrescription = (id, data) => {
+    dispatch(updatePrescriptionRequest({ id, data }));
   };
 
   const updatePrescriptionStatus = (id, status) => {
@@ -41,6 +46,7 @@ const usePrescriptions = () => {
     actionError,
     fetchPrescriptions,
     createPrescription,
+    updatePrescription,
     updatePrescriptionStatus,
     deletePrescription,
     clearError,

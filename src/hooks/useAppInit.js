@@ -58,26 +58,34 @@ const useAppInit = () => {
   };
 
   // ── 4. Check existing token ──────────────────────────
-  const checkToken = async () => {
-    try {
-      const token = getAccessToken();
-      if (!token) return;
+const checkToken = async () => {
+  try {
+    const token = getAccessToken();
+    const logged = localStorage.getItem('logged');
 
-      const payload = decodeJWT(token);
-      if (!payload) throw new Error("Invalid token");
+    
+    if (!token && !logged) return;
 
-      const isExpired = payload.exp * 1000 < Date.now();
-
-      if (isExpired) {
-        await tryRefresh();
-      } else {
-        restoreFromToken(payload);
-      }
-    } catch {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("logged");
+    if (!token && logged) {
+      await tryRefresh();
+      return;
     }
-  };
+
+    const payload = decodeJWT(token);
+    if (!payload) throw new Error("Invalid token");
+
+    const isExpired = payload.exp * 1000 < Date.now();
+
+    if (isExpired) {
+      await tryRefresh();
+    } else {
+      restoreFromToken(payload);
+    }
+  } catch {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("logged");
+  }
+};
 
   // ── 5. Run on page load ──────────────────────────────
   useEffect(() => {

@@ -21,6 +21,7 @@ import AddIcon from "@mui/icons-material/Add";
 import MedicationIcon from "@mui/icons-material/Medication";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import styled from "styled-components";
 import { useSelector } from "react-redux";
@@ -118,9 +119,8 @@ const StatusChip = ({ status }) => (
 );
 
 // ─── Next-status logic ───────────────────────────────────────────────────────
-// created -> verified (pharmacist/admin)
-// verified -> dispensed (pharmacist/admin)
-// doctor can only create; admin can move it either step.
+// created -> verified (pharmacist/admin/doctor)
+// verified -> dispensed (pharmacist/admin/doctor)
 
 const NEXT_STATUS = { created: "verified", verified: "dispensed" };
 
@@ -220,14 +220,88 @@ const CreatePrescriptionDialog = ({
   );
 };
 
-// ─── Row action menu (status change / delete) ────────────────────────────────
+// ─── Edit prescription dialog ─────────────────────────────────────────────────
+// Edits the medicines/details of an existing prescription (doctor, pharmacist).
+// Does not touch status — that's handled separately via the actions menu.
 
-const RxActionsMenu = ({ rx, canAdvance, canDelete, onAdvance, onDelete }) => {
+const EditPrescriptionDialog = ({
+  open,
+  rx,
+  onClose,
+  onSave,
+  loading,
+  error,
+}) => {
+  const [medicines, setMedicines] = useState("");
+
+  useEffect(() => {
+    if (open && rx) setMedicines(rx.medicines || "");
+  }, [open, rx]);
+
+  const isValid = medicines.trim().length > 0;
+
+  const handleSubmit = () => {
+    if (!isValid || !rx) return;
+    onSave(rx.id, { medicines: medicines.trim() });
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>Edit Prescription {rx ? `#${rx.id}` : ""}</DialogTitle>
+      <DialogContent>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        <TextField
+          label="Medicines"
+          fullWidth
+          required
+          multiline
+          minRows={4}
+          value={medicines}
+          onChange={(e) => setMedicines(e.target.value)}
+          helperText="List each medicine, dosage, and instructions"
+          sx={{ mt: 1 }}
+        />
+      </DialogContent>
+      <DialogActions sx={{ px: 3, pb: 2 }}>
+        <Button onClick={onClose} disabled={loading}>
+          Cancel
+        </Button>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          disabled={!isValid || loading}
+        >
+          {loading ? (
+            <CircularProgress size={20} color="inherit" />
+          ) : (
+            "Save Changes"
+          )}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+// ─── Row action menu (status change / edit / delete) ─────────────────────────
+
+const RxActionsMenu = ({
+  rx,
+  canAdvance,
+  canEdit,
+  canDelete,
+  onAdvance,
+  onEdit,
+  onDelete,
+}) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const nextStatus = NEXT_STATUS[rx.status];
 
-  if (!canAdvance && !canDelete) return null;
+  if (!canAdvance && !canEdit && !canDelete) return null;
 
   return (
     <>
@@ -243,6 +317,17 @@ const RxActionsMenu = ({ rx, canAdvance, canDelete, onAdvance, onDelete }) => {
             }}
           >
             Mark as {nextStatus}
+          </MenuItem>
+        )}
+        {canEdit && (
+          <MenuItem
+            onClick={() => {
+              onEdit(rx);
+              setAnchorEl(null);
+            }}
+          >
+            <EditOutlinedIcon fontSize="small" sx={{ mr: 1 }} />
+            Edit
           </MenuItem>
         )}
         {canDelete && (
@@ -274,19 +359,25 @@ const PrescriptionsPage = () => {
     actionError,
     fetchPrescriptions,
     createPrescription,
+    updatePrescription,
     updatePrescriptionStatus,
     deletePrescription,
     clearError,
   } = usePrescriptions();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingRx, setEditingRx] = useState(null);
 
   useEffect(() => {
     fetchPrescriptions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canCreate = user?.role === "doctor";
+  // Doctors and pharmacists can both create and edit prescriptions.
+  // Pharmacists additionally verify/dispense via status; doctors can also
+  // advance status (e.g. correcting their own entry) per existing backend rule.
+  const canCreate = ["doctor", "pharmacist"].includes(user?.role);
+  const canEdit = ["doctor", "pharmacist"].includes(user?.role);
   const canAdvance = ["pharmacist", "admin", "doctor"].includes(user?.role);
   const canDelete = ["admin", "doctor"].includes(user?.role);
 
@@ -304,9 +395,22 @@ const PrescriptionsPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [list.length, actionLoading, actionError]);
 
+  // Close the edit dialog once a save completes successfully
+  useEffect(() => {
+    if (editingRx && !actionLoading && !actionError) {
+      setEditingRx(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [actionLoading]);
+
   const handleCreate = (data) => createPrescription(data);
   const handleAdvance = (rx, nextStatus) =>
     updatePrescriptionStatus(rx.id, nextStatus);
+  const handleEdit = (rx) => {
+    clearError();
+    setEditingRx(rx);
+  };
+  const handleSaveEdit = (id, data) => updatePrescription(id, data);
   const handleDelete = (rx) => deletePrescription(rx.id);
 
   return (
@@ -394,8 +498,10 @@ const PrescriptionsPage = () => {
                     <RxActionsMenu
                       rx={rx}
                       canAdvance={canAdvance}
+                      canEdit={canEdit}
                       canDelete={canDelete}
                       onAdvance={handleAdvance}
+                      onEdit={handleEdit}
                       onDelete={handleDelete}
                     />
                   </Stack>
@@ -412,6 +518,15 @@ const PrescriptionsPage = () => {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         onCreate={handleCreate}
+        loading={actionLoading}
+        error={actionError}
+      />
+
+      <EditPrescriptionDialog
+        open={Boolean(editingRx)}
+        rx={editingRx}
+        onClose={() => setEditingRx(null)}
+        onSave={handleSaveEdit}
         loading={actionLoading}
         error={actionError}
       />

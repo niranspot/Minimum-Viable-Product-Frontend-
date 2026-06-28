@@ -48,10 +48,33 @@ const prescriptionSlice = createSlice({
     updatePrescriptionStatusSuccess: (state, action) => {
       state.actionLoading = false;
       const updated = action.payload;
-      const idx = state.list.findIndex((p) => p.id === updated.id);
+      // Compare loosely (== not ===): some backends return string ids, others
+      // numeric. A strict mismatch here is exactly how a "successful" PATCH can
+      // silently fail to update the visible chip color.
+      const idx = state.list.findIndex(
+        (p) => String(p.id) === String(updated.id),
+      );
       if (idx !== -1) state.list[idx] = { ...state.list[idx], ...updated };
     },
     updatePrescriptionStatusFailure: (state, action) => {
+      state.actionLoading = false;
+      state.actionError = action.payload;
+    },
+
+    // Update medicines / details
+    updatePrescriptionRequest: (state) => {
+      state.actionLoading = true;
+      state.actionError = null;
+    },
+    updatePrescriptionSuccess: (state, action) => {
+      state.actionLoading = false;
+      const updated = action.payload;
+      const idx = state.list.findIndex(
+        (p) => String(p.id) === String(updated.id),
+      );
+      if (idx !== -1) state.list[idx] = { ...state.list[idx], ...updated };
+    },
+    updatePrescriptionFailure: (state, action) => {
       state.actionLoading = false;
       state.actionError = action.payload;
     },
@@ -87,6 +110,9 @@ export const {
   updatePrescriptionStatusRequest,
   updatePrescriptionStatusSuccess,
   updatePrescriptionStatusFailure,
+  updatePrescriptionRequest,
+  updatePrescriptionSuccess,
+  updatePrescriptionFailure,
   deletePrescriptionRequest,
   deletePrescriptionSuccess,
   deletePrescriptionFailure,

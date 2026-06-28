@@ -5,34 +5,10 @@ import {
   FormControlLabel, Checkbox, Alert, CircularProgress
 } from '@mui/material';
 import { Visibility, VisibilityOff, LocalHospital } from '@mui/icons-material';
-import styled from 'styled-components';
 import { tokens } from '../../themes/theme';
 import useAuth from '../../modules/auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
-
-const PageWrapper = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, ${tokens.primary} 0%, ${tokens.primaryDark} 60%, ${tokens.dark} 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-`;
-
-const StyledCard = styled(Card)`
-  width: 100%;
-  max-width: 420px;
-  border-radius: 16px !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
-`;
-
-const LogoBox = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 8px;
-`;
+import { PageWrapper, StyledCard, LogoBox } from '../../styles/auth.styles';
 
 const LoginPage = () => {
   const { login, loading, error, isAuthenticated, clearAuthError } = useAuth();
@@ -68,10 +44,8 @@ const LoginPage = () => {
 
     if (rememberMe) {
       localStorage.setItem('remember_email', email);
-      localStorage.setItem('logged', 'true');
     } else {
       localStorage.removeItem('remember_email');
-      localStorage.setItem('logged', 'true');
     }
 
     login(email, password);
@@ -149,14 +123,14 @@ const LoginPage = () => {
                 }
                 label={<Typography variant="body2">Remember me</Typography>}
               />
-              <Typography
+              {/* <Typography
                 variant="body2"
                 color="primary"
                 sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                 onClick={() => navigate('/change-password')}
               >
                 Change Password?
-              </Typography>
+              </Typography> */}
             </Box>
 
             <Button
