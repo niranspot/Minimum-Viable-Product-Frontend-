@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Toolbar } from '@mui/material';
+import { Box, Toolbar, useMediaQuery, useTheme, Drawer, IconButton, state } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import Sidebar from './Sidebar';
 import Topbar  from './Topbar';
 
@@ -7,24 +8,48 @@ const OPEN   = 240;
 const CLOSED = 64;
 
 const DashboardLayout = ({ children }) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen]         = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme                   = useTheme();
+  const isMobile                = useMediaQuery(theme.breakpoints.down('md'));
 
   return (
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
 
-      <Box 
-        sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <Sidebar open={open} onToggle={() => setOpen(!open)} />
+      {/* Desktop sidebar */}
+      {!isMobile && (
+        <Sidebar open={open} onToggle={() => setOpen(!open)} />
+      )}
+
+      {/* Mobile drawer */}
+      {isMobile && (
+        <Drawer
+          variant="temporary"
+          open={mobileOpen}
+          onClose={() => setMobileOpen(false)}
+          ModalProps={{ keepMounted: true }}
+          sx={{ '& .MuiDrawer-paper': { width: OPEN, background: '#1A1A2E' } }}
+        >
+          <Sidebar open={true} onToggle={() => setMobileOpen(false)} />
+        </Drawer>
+      )}
+
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          ml: `${open ? OPEN : CLOSED}px`,
+          ml: isMobile ? 0 : `${open ? OPEN : CLOSED}px`,
           transition: 'margin-left 0.25s ease',
+          width: isMobile ? '100%' : 'auto',
         }}
       >
-        <Topbar sidebarOpen={open} />
+        <Topbar
+          sidebarOpen={open}
+          isMobile={isMobile}
+          onMobileToggle={() => setMobileOpen(true)}
+        />
         <Toolbar sx={{ minHeight: '56px !important' }} />
-        <Box sx={{p:3}}>
+        <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
           {children}
         </Box>
       </Box>

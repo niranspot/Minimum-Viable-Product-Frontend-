@@ -123,14 +123,14 @@ const LoginPage = () => {
                 }
                 label={<Typography variant="body2">Remember me</Typography>}
               />
-              <Typography
+              {/* <Typography
                 variant="body2"
                 color="primary"
                 sx={{ cursor: 'pointer', '&:hover': { textDecoration: 'underline' } }}
                 onClick={() => navigate('/change-password')}
               >
                 Change Password?
-              </Typography>
+              </Typography> */}
             </Box>
 
             <Button
