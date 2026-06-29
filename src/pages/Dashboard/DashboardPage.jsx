@@ -151,8 +151,6 @@ const perPrescriptionDoctorColumns = [
   },
 ];
 
-// Pivots [{ status, count, doctor_name, doctor_id }, ...] into
-// [{ doctor_id, doctor_name, created, verified, dispensed }, ...]
 const buildPrescriptionRows = (byStatusAndDoctor = []) => {
   const byDoctor = {};
   byStatusAndDoctor.forEach((row) => {
@@ -255,28 +253,14 @@ const DashboardPage = () => {
       {/* ── Top Summary Cards ──────────────────────────────── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         {statCards.map((s) => (
-          /* Fixed grid format: break elements up into core props directly */
-          <Grid key={s.label} item xs={12} sm={6} md={3}>
+          <Grid key={s.label} size={{ xs: 12, sm: 6, md: 3 }}>
             <SummaryCard bg={s.bg}>
               <IconBox>{s.icon}</IconBox>
               <Box>
-                <Typography
-                  sx={{
-                    fontSize: 28,
-                    fontWeight: 700,
-                    color: "#fff",
-                    lineHeight: 1,
-                  }}
-                >
+                <Typography sx={{ fontSize: 28, fontWeight: 700, color: "#fff", lineHeight: 1 }}>
                   {s.value}
                 </Typography>
-                <Typography
-                  sx={{
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.85)",
-                    mt: 0.5,
-                  }}
-                >
+                <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.85)", mt: 0.5 }}>
                   {s.label}
                 </Typography>
               </Box>
@@ -287,8 +271,7 @@ const DashboardPage = () => {
 
       {/* ── Appointment Status Breakdown + Per Day ─────────── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
-        {/* Appointment status breakdown */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <DataCard>
             <SectionTitle variant="h6">Appointment Status</SectionTitle>
 
@@ -345,8 +328,7 @@ const DashboardPage = () => {
           </DataCard>
         </Grid>
 
-        {/* Appointments per day */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <DataCard>
             <SectionTitle variant="h6">Appointments Per Day</SectionTitle>
             <Table
@@ -362,9 +344,9 @@ const DashboardPage = () => {
         </Grid>
       </Grid>
 
-      {/* ── Per Doctor + Admin Tenant Analytics ───────────── */}
+      {/* ── Per Doctor + Admin Tenant Analytics ─── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={isAdmin ? 6 : 12}>
+        <Grid size={{ xs: 12, md: isAdmin ? 6 : 12 }}>
           <DataCard>
             <SectionTitle variant="h6">Appointments by Doctor</SectionTitle>
             <Table
@@ -380,90 +362,64 @@ const DashboardPage = () => {
           </DataCard>
         </Grid>
 
-        <Grid container spacing={2.5} sx={{ mb: 3 }}>
-          <Grid item xs={12}>
-            <DataCard>
-              <SectionTitle variant="h6">Prescriptions by Doctor</SectionTitle>
-              <Table
-                dataSource={perPrescriptionDoctor}
-                columns={perPrescriptionDoctorColumns}
-                rowKey="doctor_id"
-                pagination={false}
-                size="small"
-                loading={loading}
-                locale={{ emptyText: "No prescription data yet" }}
-                scroll={{ x: 400 }}
-              />
-            </DataCard>
-          </Grid>
+        <Grid size={{ xs: 12, md: isAdmin ? 6 : 12 }}>
+          <DataCard>
+            <SectionTitle variant="h6">Prescriptions by Doctor</SectionTitle>
+            <Table
+              dataSource={perPrescriptionDoctor}
+              columns={perPrescriptionDoctorColumns}
+              rowKey="doctor_id"
+              pagination={false}
+              size="small"
+              loading={loading}
+              locale={{ emptyText: "No prescription data yet" }}
+              scroll={{ x: 400 }}
+            />
+          </DataCard>
         </Grid>
 
-        {/* Admin only: tenant analytics */}
+        {/* Admin only: tenant analytics falls cleanly beneath */}
         {isAdmin && tenantAnalytics?.tenants && (
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12 }}>
             <DataCard>
               <SectionTitle variant="h6">Tenant Analytics</SectionTitle>
-              {tenantAnalytics.tenants.map((t) => (
-                <Box
-                  key={t.tenant_id}
-                  sx={{
-                    p: 1.5,
-                    mb: 1,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    borderRadius: 2,
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      mb: 1,
-                    }}
-                  >
-                    <Typography variant="body2" fontWeight={700}>
-                      {t.tenant_name}
-                    </Typography>
-                    <Chip
-                      label={t.tenant_status}
-                      size="small"
+              <Grid container spacing={2}>
+                {tenantAnalytics.tenants.map((t) => (
+                  <Grid size={{ xs: 12, sm: 6, md: 4 }} key={t.tenant_id}>
+                    <Box
                       sx={{
-                        bgcolor:
-                          t.tenant_status === "active" ? "#E8F5E9" : "#FFEBEE",
-                        color:
-                          t.tenant_status === "active" ? "#2E7D32" : "#C62828",
-                        fontWeight: 600,
-                        fontSize: 10,
+                        p: 1.5,
+                        border: "1px solid",
+                        borderColor: "divider",
+                        borderRadius: 2,
+                        height: "100%",
                       }}
-                    />
-                  </Box>
-                  <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                    <Chip
-                      label={`${t.total_patients} patients`}
-                      size="small"
-                      color="primary"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={`${t.total_appointments} appts`}
-                      size="small"
-                      color="success"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={`${t.total_prescriptions} rx`}
-                      size="small"
-                      color="secondary"
-                      variant="outlined"
-                    />
-                    <Chip
-                      label={`${t.active_users} users`}
-                      size="small"
-                      variant="outlined"
-                    />
-                  </Box>
-                </Box>
-              ))}
+                    >
+                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1, alignItems: "center" }}>
+                        <Typography variant="body2" fontWeight={700}>
+                          {t.tenant_name}
+                        </Typography>
+                        <Chip
+                          label={t.tenant_status}
+                          size="small"
+                          sx={{
+                            bgcolor: t.tenant_status === "active" ? "#E8F5E9" : "#FFEBEE",
+                            color: t.tenant_status === "active" ? "#2E7D32" : "#C62828",
+                            fontWeight: 600,
+                            fontSize: 10,
+                          }}
+                        />
+                      </Box>
+                      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Chip label={`${t.total_patients} patients`} size="small" color="primary" variant="outlined" />
+                        <Chip label={`${t.total_appointments} appts`} size="small" color="success" variant="outlined" />
+                        <Chip label={`${t.total_prescriptions} rx`} size="small" color="secondary" variant="outlined" />
+                        <Chip label={`${t.active_users} users`} size="small" variant="outlined" />
+                      </Box>
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
             </DataCard>
           </Grid>
         )}

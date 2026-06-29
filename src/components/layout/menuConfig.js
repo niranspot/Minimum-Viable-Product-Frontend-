@@ -14,14 +14,14 @@ export const menuItems = [
     label: 'Dashboard',
     icon: <DashboardIcon />,
     path: '/dashboard',
-    roles: ['admin', 'doctor', 'nurse', 'receptionist', 'pharmacist'],
+    roles: ['admin', 'doctor'],
   },
   {
     key: 'staff',
     label: 'Users & Staff',
     icon: <PeopleIcon />,
     path: '/dashboard/staff',
-    roles: ['admin'],
+    roles: ['admin', 'doctor', 'nurse'],
   },
   {
     key: 'patients',
@@ -35,7 +35,7 @@ export const menuItems = [
     label: 'Appointments',
     icon: <EventIcon />,
     path: '/dashboard/appointments',
-    roles: ['admin', 'doctor', 'nurse', 'receptionist'],
+    roles: [ 'doctor', 'nurse', 'receptionist'],
   },
   {
     key: 'communication',
