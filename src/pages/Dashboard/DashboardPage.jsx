@@ -180,16 +180,12 @@ const DashboardPage = () => {
     loading,
     error,
     fetchDashboard,
-    fetchTenantAnalytics,
   } = useDashboard();
 
   const { user } = useSelector((s) => s.auth);
   const isAdmin = user?.role === "admin";
 
-  useEffect(() => {
-    fetchDashboard();
-    if (isAdmin) fetchTenantAnalytics();
-  }, [isAdmin]);
+
 
   if (loading && !summary) {
     return (

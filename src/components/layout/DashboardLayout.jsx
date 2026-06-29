@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Toolbar, useMediaQuery, useTheme, Drawer, state } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import { Box, Toolbar, useMediaQuery, useTheme, Drawer } from '@mui/material'; // Removed invalid ", state"
+import { Outlet } from 'react-router-dom'; // Added for nested route compatibility
 import Sidebar from './Sidebar';
 import Topbar  from './Topbar';
 
@@ -50,7 +50,8 @@ const DashboardLayout = ({ children }) => {
         />
         <Toolbar sx={{ minHeight: '56px !important' }} />
         <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
-          {children}
+          {/* Fallback to legacy children prop if passed, otherwise load React Router's Outlet */}
+          {children || <Outlet />}
         </Box>
       </Box>
     </Box>

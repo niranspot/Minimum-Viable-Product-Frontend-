@@ -3,15 +3,11 @@ import {
   fetchDashboardSummaryAPI,
   fetchDashboardAppointmentsAPI,
   fetchDashboardPrescriptionsAPI,
-  fetchTenantAnalyticsAPI,
 } from "./dashboardAPI";
 import {
   fetchDashboardRequest,
   fetchDashboardSuccess,
   fetchDashboardFailure,
-  fetchTenantAnalyticsRequest,
-  fetchTenantAnalyticsSuccess,
-  fetchTenantAnalyticsFailure,
 } from "./dashboardSlice";
 
 function* handleFetchDashboard() {
@@ -38,23 +34,7 @@ function* handleFetchDashboard() {
   }
 }
 
-function* handleFetchTenantAnalytics() {
-  try {
-    const res = yield call(fetchTenantAnalyticsAPI);
-    yield put(fetchTenantAnalyticsSuccess(res.data.data));
-  } catch (err) {
-    yield put(
-      fetchTenantAnalyticsFailure(
-        err.response?.data?.message || "Failed to load tenant analytics",
-      ),
-    );
-  }
-}
 
 export default function* dashboardSaga() {
   yield takeLatest(fetchDashboardRequest.type, handleFetchDashboard);
-  yield takeLatest(
-    fetchTenantAnalyticsRequest.type,
-    handleFetchTenantAnalytics,
-  );
 }
