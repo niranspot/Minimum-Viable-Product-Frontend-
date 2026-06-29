@@ -28,14 +28,14 @@ export const menuItems = [
     label: 'Patients',
     icon: <PersonIcon />,
     path: '/dashboard/patients',
-    roles: [ 'doctor', 'nurse','patient'],
+    roles: [ 'doctor', 'nurse'],
   },
   {
     key: 'appointments',
     label: 'Appointments',
     icon: <EventIcon />,
     path: '/dashboard/appointments',
-    roles: [ 'doctor', 'nurse', 'receptionist'],
+    roles: [ 'doctor', 'nurse', 'receptionist','patient'],
   },
   {
     key: 'communication',
