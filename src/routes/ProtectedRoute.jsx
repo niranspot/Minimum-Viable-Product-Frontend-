@@ -1,32 +1,34 @@
-import React from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { CircularProgress, Box } from '@mui/material';
-import { getRoleHomePage, routePermissions } from '../utils/roleUtils';
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { CircularProgress, Box } from "@mui/material";
 
 const ProtectedRoute = ({ children }) => {
-  const { isAuthenticated, user, sessionChecked } = useSelector((state) => state.auth);
-  const location = useLocation();
+  const { isAuthenticated, sessionChecked } = useSelector(
+    (state) => state.auth,
+  );
 
-  // Still restoring session → show spinner
+  // Never decide to redirect until the one-time startup session check has
+  // actually committed to the store. Without this, isAuthenticated can still
+  // read as its initial `false` for a render or two while restoreSession is
+  // in flight — causing a brief bounce to /login before it self-corrects.
   if (!sessionChecked) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
   }
 
-  // Not logged in → go to login
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
-  }
-
-  // Check if role allowed for current route
-  const allowedRoles = routePermissions[location.pathname];
-  if (allowedRoles && !allowedRoles.includes(user?.role)) {
-    // Role not allowed → redirect to their home
-    return <Navigate to={getRoleHomePage(user?.role)} replace />;
   }
 
   return children;
