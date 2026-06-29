@@ -50,9 +50,6 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
     },
 
-    // Marks the startup session check as finished (success, failure, or no
-    // token at all). Dispatched once from useAppInit, after restoreSession
-    // (if any) has already been dispatched.
     sessionCheckComplete: (state) => {
       state.sessionChecked = true;
     },
