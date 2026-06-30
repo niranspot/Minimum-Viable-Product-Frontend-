@@ -4,7 +4,8 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, MenuItem, Tooltip, CircularProgress, Alert,
 } from '@mui/material';
-import { Table, Tag, Input } from 'antd';
+import { Table, Tag, Input, DatePicker } from 'antd';
+import dayjs from 'dayjs';
 import AddIcon         from '@mui/icons-material/Add';
 import EditIcon        from '@mui/icons-material/Edit';
 import SearchIcon      from '@mui/icons-material/Search';
@@ -13,20 +14,21 @@ import HourglassIcon   from '@mui/icons-material/HourglassEmpty';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon      from '@mui/icons-material/Cancel';
-import styled          from 'styled-components';
+import ShieldIcon      from '@mui/icons-material/Shield';
+import styled, { createGlobalStyle } from 'styled-components';
 import useAppointments from '../../modules/appointments/hooks/useAppointments';
 import { useSelector }  from 'react-redux';
 
 // ── Hero banner (Unsplash) ──────────────────────────────────────
 const Hero = styled.div`
   position: relative;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  min-height: 150px;
+  min-height: 230px;
   margin-bottom: 24px;
   display: flex;
   align-items: center;
-  padding: 28px 32px;
+  padding: 36px 40px;
   background-image:
     linear-gradient(120deg, rgba(27,138,90,0.92) 10%, rgba(27,138,90,0.55) 60%, rgba(27,138,90,0.15) 100%),
     url('https://source.unsplash.com/1600x500/?medical,calendar,appointment');
@@ -34,46 +36,156 @@ const Hero = styled.div`
   background-position: center;
 `;
 
-const HeroText = styled.div`
-  color: #fff;
-  max-width: 560px;
+const HeroShield = styled(ShieldIcon)`
+  position: absolute !important;
+  right: 36px;
+  bottom: 28px;
+  font-size: 64px !important;
+  color: rgba(255,255,255,0.18);
 `;
 
-// ── Styled ────────────────────────────────────────────────────
+// MUI Dialog renders at z-index 1300; AntD's DatePicker dropdown portal
+// defaults lower than that, so it ends up visually behind the dialog.
+// Also scale the popup down slightly — with showTime enabled it gets tall
+// enough that the panel border / OK button can get clipped off-screen.
+const AntdPopupZIndexFix = createGlobalStyle`
+  .ant-picker-dropdown {
+    z-index: 1400 !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-panel-container {
+    font-size: 12px !important;
+    max-height: 320px !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-datetime-panel {
+    max-height: 320px !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-date-panel,
+  .ant-picker-dropdown .ant-picker-time-panel {
+    max-height: 320px !important;
+    overflow: hidden !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-header {
+    padding: 4px 8px !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-cell .ant-picker-cell-inner {
+    width: 22px !important;
+    height: 22px !important;
+    line-height: 22px !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-body {
+    padding: 4px 8px !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-content th,
+  .ant-picker-dropdown .ant-picker-content td {
+    padding: 0 !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-time-panel-column {
+    width: 44px !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-time-panel-column .ant-picker-time-panel-cell-inner {
+    height: 22px !important;
+    line-height: 22px !important;
+    padding: 0 0 0 12px !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-footer {
+    padding: 4px 8px !important;
+    min-width: 0 !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-footer .ant-picker-ok button {
+    height: 22px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+`;
+
+const HeroText = styled.div`
+  color: #fff;
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+`;
+
+const HeroBadges = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+`;
+
+const HeroBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+`;
+
+// ── Page layout ─────────────────────────────────────────────────
 const PageWrapper = styled.div`
   background: ${({ theme }) => theme.bg};
   min-height: 100%;
 `;
 
 const StatsRow = styled.div`
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 const StatCard = styled.div`
+  position: relative;
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.divider};
-  border-radius: 12px;
-  padding: 16px 22px;
-  flex: 1;
-  min-width: 140px;
+  border-radius: 16px;
+  padding: 20px 22px 18px;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 14px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  gap: 16px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: ${({ accent }) => accent};
   }
 `;
 
 const StatIconWrap = styled.div`
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,34 +195,46 @@ const StatIconWrap = styled.div`
 `;
 
 const StatValue = styled.div`
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: ${({ theme }) => theme.text};
   line-height: 1.1;
 `;
 
 const StatLabel = styled.div`
   font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   color: ${({ theme }) => theme.textMuted};
-  margin-top: 2px;
+  margin-top: 3px;
 `;
 
 const TableCard = styled.div`
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.divider};
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 22px;
 `;
 
 const TopRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   gap: 12px;
   flex-wrap: wrap;
+`;
+
+const TitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const RoundIconButton = styled(IconButton)`
+  border: 1px solid ${({ theme }) => theme.divider} !important;
+  border-radius: 10px !important;
 `;
 
 // ── Status config ─────────────────────────────────────────────
@@ -268,16 +392,24 @@ const AppointmentsPage = () => {
 
   return (
     <PageWrapper>
+      <AntdPopupZIndexFix />
+
       <Hero>
+        <HeroShield />
         <HeroText>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 0.5 }}>
+          <Typography sx={{ fontSize: 28, fontWeight: 800, mb: 1 }}>
             {isPatient ? 'My Appointments' : 'Appointment & Scheduling'}
           </Typography>
-          <Typography sx={{ fontSize: 13.5, opacity: 0.92 }}>
+          <Typography sx={{ fontSize: 14.5, opacity: 0.92, lineHeight: 1.5 }}>
             {isPatient
               ? 'Book new appointments and track your upcoming visits.'
               : 'Track appointment status across doctors, with conflict-aware scheduling.'}
           </Typography>
+          <HeroBadges>
+            <HeroBadge><EventAvailableIcon style={{ fontSize: 16 }} /> Real-time Status</HeroBadge>
+            <HeroBadge><HourglassIcon style={{ fontSize: 16 }} /> Conflict-aware</HeroBadge>
+            <HeroBadge><CheckCircleIcon style={{ fontSize: 16 }} /> Easy Tracking</HeroBadge>
+          </HeroBadges>
         </HeroText>
       </Hero>
 
@@ -286,20 +418,20 @@ const AppointmentsPage = () => {
 
       {/* Stats */}
       <StatsRow>
-        <StatCard>
-          <StatIconWrap bg="#FFF3E0" color="#E65100"><HourglassIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#E65100">
+          <StatIconWrap bg="#FFF3E0" color="#E65100"><HourglassIcon /></StatIconWrap>
           <Box><StatValue>{pending}</StatValue><StatLabel>Pending</StatLabel></Box>
         </StatCard>
-        <StatCard>
-          <StatIconWrap bg="#E3F2FD" color="#1565C0"><EventAvailableIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#1565C0">
+          <StatIconWrap bg="#E3F2FD" color="#1565C0"><EventAvailableIcon /></StatIconWrap>
           <Box><StatValue>{confirmed}</StatValue><StatLabel>Confirmed</StatLabel></Box>
         </StatCard>
-        <StatCard>
-          <StatIconWrap bg="#E8F5E9" color="#2E7D32"><CheckCircleIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#2E7D32">
+          <StatIconWrap bg="#E8F5E9" color="#2E7D32"><CheckCircleIcon /></StatIconWrap>
           <Box><StatValue>{completed}</StatValue><StatLabel>Completed</StatLabel></Box>
         </StatCard>
-        <StatCard>
-          <StatIconWrap bg="#FFEBEE" color="#C62828"><CancelIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#C62828">
+          <StatIconWrap bg="#FFEBEE" color="#C62828"><CancelIcon /></StatIconWrap>
           <Box><StatValue>{cancelled}</StatValue><StatLabel>Cancelled</StatLabel></Box>
         </StatCard>
       </StatsRow>
@@ -307,14 +439,17 @@ const AppointmentsPage = () => {
       {/* Table */}
       <TableCard>
         <TopRow>
-          <Typography variant="h6" fontWeight={700}>Appointments</Typography>
-          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', alignItems: 'center' }}>
+          <TitleGroup>
+            <EventAvailableIcon sx={{ color: '#1B8A5A' }} />
+            <Typography variant="h6" fontWeight={800}>Appointments</Typography>
+          </TitleGroup>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
             <Input
               prefix={<SearchIcon style={{ color: '#718096', fontSize: 16 }} />}
               placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 190, borderRadius: 8 }}
+              style={{ width: 230, borderRadius: 999 }}
               allowClear
             />
             <TextField
@@ -332,13 +467,22 @@ const AppointmentsPage = () => {
             </TextField>
             <Tooltip title="Refresh">
               <span>
-                <IconButton onClick={fetchAppointments} disabled={loading}>
-                  <RefreshIcon />
-                </IconButton>
+                <RoundIconButton size="small" onClick={fetchAppointments} disabled={loading}>
+                  <RefreshIcon fontSize="small" />
+                </RoundIconButton>
               </span>
             </Tooltip>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}
-              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={openCreate}
+              sx={{
+                borderRadius: 999, textTransform: 'none', fontWeight: 700, px: 2.4,
+                background: 'linear-gradient(120deg,#1B8A5A,#15724A)',
+                boxShadow: '0 4px 14px rgba(27,138,90,0.35)',
+                '&:hover': { background: 'linear-gradient(120deg,#15724A,#0F5C3C)' },
+              }}
+            >
               {isPatient ? 'Book Appointment' : 'New Appointment'}
             </Button>
           </Box>
@@ -356,8 +500,15 @@ const AppointmentsPage = () => {
       </TableCard>
 
       {/* Modal */}
-      <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle fontWeight={700}>
+      <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        disableEnforceFocus
+        disableAutoFocus
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>
           {editTarget
             ? isPatient ? 'Cancel Appointment' : 'Update Appointment'
             : isPatient ? 'Book Appointment' : 'New Appointment'}
@@ -382,13 +533,25 @@ const AppointmentsPage = () => {
                 </>
               )}
 
-              <TextField
-                label="Appointment Date & Time"
-                value={form.appointment_date}
-                onChange={(e) => setForm({ ...form, appointment_date: e.target.value })}
-                size="small" fullWidth
-                placeholder="YYYY-MM-DD HH:MM:SS"
-              />
+              <Box>
+                <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary', fontWeight: 600 }}>
+                  Appointment Date & Time
+                </Typography>
+                <DatePicker
+                  showTime={{ format: 'HH:mm' }}
+                  format="YYYY-MM-DD HH:mm:ss"
+                  style={{ width: '100%' }}
+                  size="large"
+                  placement="bottomLeft"
+                  autoAdjustOverflow={false}
+                  getPopupContainer={() => document.body}
+                  value={form.appointment_date ? dayjs(form.appointment_date) : null}
+                  onChange={(date) =>
+                    setForm({ ...form, appointment_date: date ? date.format('YYYY-MM-DD HH:mm:ss') : '' })
+                  }
+                  disabledDate={(current) => current && current < dayjs().startOf('day')}
+                />
+              </Box>
 
               {editTarget && !isPatient && (
                 <TextField select label="Status" value={form.status}

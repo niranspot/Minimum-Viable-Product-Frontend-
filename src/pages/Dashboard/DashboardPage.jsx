@@ -9,6 +9,9 @@ import MedicalIcon      from '@mui/icons-material/MedicalServices';
 import CheckCircleIcon  from '@mui/icons-material/CheckCircle';
 import HourglassIcon    from '@mui/icons-material/HourglassEmpty';
 import CancelIcon       from '@mui/icons-material/Cancel';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import TravelExploreIcon from '@mui/icons-material/TravelExplore';
+import ShieldIcon       from '@mui/icons-material/Shield';
 import styled           from 'styled-components';
 import useDashboard     from '../../modules/dashboard/hooks/useDashboard';
 import { useSelector }  from 'react-redux';
@@ -17,13 +20,13 @@ import { useEffect }    from 'react';
 // ── Hero banner (Unsplash) ──────────────────────────────────────
 const Hero = styled.div`
   position: relative;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  min-height: 150px;
+  min-height: 230px;
   margin-bottom: 24px;
   display: flex;
   align-items: center;
-  padding: 28px 32px;
+  padding: 36px 40px;
   background-image:
     linear-gradient(120deg, rgba(123,31,162,0.92) 10%, rgba(123,31,162,0.55) 60%, rgba(123,31,162,0.15) 100%),
     url('https://source.unsplash.com/1600x500/?healthcare,dashboard,clinic');
@@ -31,9 +34,40 @@ const Hero = styled.div`
   background-position: center;
 `;
 
+const HeroShield = styled(ShieldIcon)`
+  position: absolute !important;
+  right: 36px;
+  bottom: 28px;
+  font-size: 64px !important;
+  color: rgba(255,255,255,0.18);
+`;
+
 const HeroText = styled.div`
   color: #fff;
-  max-width: 580px;
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+`;
+
+const HeroBadges = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+`;
+
+const HeroBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
 `;
 
 // ── Styled ─────────────────────────────────────────────────────
@@ -43,24 +77,26 @@ const PageWrapper = styled.div`
 `;
 
 const SummaryCard = styled.div`
+  position: relative;
   background: ${({ bg }) => bg};
-  border-radius: 14px;
-  padding: 20px 24px;
+  border-radius: 16px;
+  padding: 20px 22px 18px;
   color: #fff;
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
   }
 `;
 
 const IconBox = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   background: rgba(255, 255, 255, 0.2);
   display: flex;
   align-items: center;
@@ -71,13 +107,13 @@ const IconBox = styled.div`
 const DataCard = styled.div`
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.divider};
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 22px;
   height: 100%;
 `;
 
 const SectionTitle = styled(Typography)`
-  font-weight: 700 !important;
+  font-weight: 800 !important;
   margin-bottom: 16px !important;
 `;
 
@@ -175,13 +211,19 @@ const DashboardPage = () => {
   return (
     <PageWrapper>
       <Hero>
+        <HeroShield />
         <HeroText>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 0.5 }}>
+          <Typography sx={{ fontSize: 28, fontWeight: 800, mb: 1 }}>
             {isAdmin ? 'Admin Dashboard' : 'Provider Dashboard'}
           </Typography>
-          <Typography sx={{ fontSize: 13.5, opacity: 0.92 }}>
+          <Typography sx={{ fontSize: 14.5, opacity: 0.92, lineHeight: 1.5 }}>
             A real-time snapshot of patients, appointments, and prescriptions across your tenant.
           </Typography>
+          <HeroBadges>
+            <HeroBadge><VerifiedUserIcon style={{ fontSize: 16 }} /> Live Data</HeroBadge>
+            <HeroBadge><TravelExploreIcon style={{ fontSize: 16 }} /> Tenant-wide</HeroBadge>
+            <HeroBadge><CheckCircleIcon style={{ fontSize: 16 }} /> At-a-glance Stats</HeroBadge>
+          </HeroBadges>
         </HeroText>
       </Hero>
 
@@ -194,8 +236,8 @@ const DashboardPage = () => {
             <SummaryCard bg={s.bg}>
               <IconBox>{s.icon}</IconBox>
               <Box>
-                <Typography sx={{ fontSize: 28, fontWeight: 700, color: '#fff', lineHeight: 1 }}>{s.value}</Typography>
-                <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.85)', mt: 0.5 }}>{s.label}</Typography>
+                <Typography sx={{ fontSize: 26, fontWeight: 800, color: '#fff', lineHeight: 1.1 }}>{s.value}</Typography>
+                <Typography sx={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'rgba(255,255,255,0.85)', mt: 0.5 }}>{s.label}</Typography>
               </Box>
             </SummaryCard>
           </Grid>

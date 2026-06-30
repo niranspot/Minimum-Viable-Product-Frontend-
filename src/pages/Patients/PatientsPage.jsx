@@ -1,120 +1,213 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Button, Typography, Chip, IconButton,
+  Box, Button, Typography, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, MenuItem, Tooltip, CircularProgress, Alert, Avatar,
 } from '@mui/material';
-import { Table, Input, Tag } from 'antd';
-import AddIcon       from '@mui/icons-material/Add';
-import EditIcon       from '@mui/icons-material/Edit';
-import DeleteIcon     from '@mui/icons-material/Delete';
-import SearchIcon     from '@mui/icons-material/Search';
-import RefreshIcon    from '@mui/icons-material/Refresh';
-import PeopleAltIcon  from '@mui/icons-material/PeopleAlt';
-import MaleIcon       from '@mui/icons-material/Male';
-import FemaleIcon     from '@mui/icons-material/Female';
-import BloodtypeIcon  from '@mui/icons-material/Bloodtype';
-import styled         from 'styled-components';
-import usePatients    from '../../modules/patients/hooks/usePatients';
+import { Table, Input, DatePicker } from 'antd';
+import dayjs from 'dayjs';
+import AddIcon            from '@mui/icons-material/Add';
+import EditIcon            from '@mui/icons-material/Edit';
+import DeleteIcon          from '@mui/icons-material/Delete';
+import SearchIcon          from '@mui/icons-material/Search';
+import RefreshIcon         from '@mui/icons-material/Refresh';
+import FilterListIcon      from '@mui/icons-material/FilterList';
+import PeopleAltIcon       from '@mui/icons-material/PeopleAlt';
+import MaleIcon            from '@mui/icons-material/Male';
+import FemaleIcon          from '@mui/icons-material/Female';
+import BloodtypeIcon       from '@mui/icons-material/Bloodtype';
+import VerifiedUserIcon    from '@mui/icons-material/VerifiedUser';
+import TravelExploreIcon   from '@mui/icons-material/TravelExplore';
+import HowToRegIcon        from '@mui/icons-material/HowToReg';
+import EventIcon           from '@mui/icons-material/Event';
+import PhoneIcon           from '@mui/icons-material/Phone';
+import ShieldIcon          from '@mui/icons-material/Shield';
+import styled, { createGlobalStyle } from 'styled-components';
+import usePatients         from '../../modules/patients/hooks/usePatients';
 
-// ── Hero banner (Unsplash) ──────────────────────────────────────
+// MUI Dialog renders at z-index 1300; AntD's DatePicker dropdown portal
+// defaults lower than that, so it ends up visually behind the dialog.
+// Also scale the popup down slightly so it fits cleanly without its
+// border/footer getting clipped.
+const AntdPopupZIndexFix = createGlobalStyle`
+  .ant-picker-dropdown {
+    z-index: 1400 !important;
+  }
+
+  .ant-picker-dropdown .ant-picker-panel-container {
+    transform: scale(0.78);
+    transform-origin: top left;
+  }
+`;
+
+const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+// ── Hero banner ──────────────────────────────────────────────────
 const Hero = styled.div`
   position: relative;
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  min-height: 150px;
+  min-height: 230px;
   margin-bottom: 24px;
   display: flex;
   align-items: center;
-  padding: 28px 32px;
+  padding: 36px 40px;
   background-image:
-    linear-gradient(120deg, rgba(21,101,192,0.92) 10%, rgba(21,101,192,0.55) 60%, rgba(21,101,192,0.15) 100%),
-    url('https://source.unsplash.com/1600x500/?hospital,patient,doctor');
+    linear-gradient(110deg, #1E3A8A 0%, #1D4ED8 35%, rgba(29,78,216,0.55) 65%, rgba(29,78,216,0.1) 100%),
+    url('https://source.unsplash.com/1600x600/?hospital,corridor,doctor,nurse');
   background-size: cover;
   background-position: center;
 `;
 
-const HeroText = styled.div`
-  color: #fff;
-  max-width: 560px;
+const HeroShield = styled(ShieldIcon)`
+  position: absolute !important;
+  right: 36px;
+  bottom: 28px;
+  font-size: 64px !important;
+  color: rgba(255,255,255,0.18);
 `;
 
-// ── Styled Components ──────────────────────────────────────────
+const HeroText = styled.div`
+  color: #fff;
+  max-width: 600px;
+  position: relative;
+  z-index: 1;
+`;
+
+const HeroBadges = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+`;
+
+const HeroBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fff;
+`;
+
+// ── Page layout ─────────────────────────────────────────────────
 const PageWrapper = styled.div`
   background: ${({ theme }) => theme.bg};
   min-height: 100%;
 `;
 
 const StatsRow = styled.div`
-  display: flex;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 const StatCard = styled.div`
+  position: relative;
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.divider};
-  border-radius: 12px;
-  padding: 16px 22px;
-  flex: 1;
-  min-width: 150px;
+  border-radius: 16px;
+  padding: 20px 22px 18px;
+  overflow: hidden;
   display: flex;
   align-items: center;
-  gap: 14px;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  gap: 16px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: ${({ accent }) => accent};
   }
 `;
 
 const StatIconWrap = styled.div`
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: ${({ bg }) => bg || '#E3F0FF'};
-  color: ${({ color }) => color || '#1565C0'};
+  background: ${({ bg }) => bg};
+  color: ${({ color }) => color};
 `;
 
-const StatValue = styled.span`
-  font-size: 24px;
-  font-weight: 700;
+const StatValue = styled.div`
+  font-size: 26px;
+  font-weight: 800;
   color: ${({ theme }) => theme.text};
   line-height: 1.1;
-  display: block;
 `;
 
-const StatLabel = styled.span`
-  font-size: 11.5px;
+const StatLabel = styled.div`
+  font-size: 11px;
+  font-weight: 700;
   color: ${({ theme }) => theme.textMuted};
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+  margin-top: 3px;
 `;
 
 const TableCard = styled.div`
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.divider};
-  border-radius: 12px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 22px;
 `;
 
 const TopRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   gap: 12px;
   flex-wrap: wrap;
 `;
 
-// ── Gender tag colors ──────────────────────────────────────────
-const genderColor = { male: 'blue', female: 'magenta', other: 'default' };
+const TitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+`;
+
+const RoundIconButton = styled(IconButton)`
+  border: 1px solid ${({ theme }) => theme.divider} !important;
+  border-radius: 10px !important;
+`;
+
+// ── Pill chip used inside table cells ─────────────────────────
+const Pill = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: ${({ bg }) => bg};
+  color: ${({ color }) => color};
+  white-space: nowrap;
+`;
 
 // ── Default form state ─────────────────────────────────────────
 const emptyForm = {
@@ -124,6 +217,12 @@ const emptyForm = {
   gender: '',
   address: '',
   emergency_contact: '',
+};
+
+const genderStyle = {
+  male:   { bg: '#E3F2FD', color: '#1565C0', icon: <MaleIcon style={{ fontSize: 13 }} /> },
+  female: { bg: '#FCE4EC', color: '#AD1457', icon: <FemaleIcon style={{ fontSize: 13 }} /> },
+  other:  { bg: '#F1F1F1', color: '#555',    icon: null },
 };
 
 // ── Component ──────────────────────────────────────────────────
@@ -204,12 +303,12 @@ const PatientsPage = () => {
       dataIndex: 'name',
       key: 'name',
       render: (name, rec) => (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
-          <Avatar sx={{ width: 32, height: 32, fontSize: 13, bgcolor: '#E3F0FF', color: '#1565C0', fontWeight: 700 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.3 }}>
+          <Avatar sx={{ width: 34, height: 34, fontSize: 13, bgcolor: '#E3F0FF', color: '#1565C0', fontWeight: 800 }}>
             {(name || '?').charAt(0).toUpperCase()}
           </Avatar>
           <Box>
-            <Typography variant="body2" fontWeight={600}>{name || '—'}</Typography>
+            <Typography variant="body2" fontWeight={700}>{name || '—'}</Typography>
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>{rec.email}</Typography>
           </Box>
         </Box>
@@ -219,38 +318,64 @@ const PatientsPage = () => {
       title: 'Gender',
       dataIndex: 'gender',
       key: 'gender',
-      render: (g) => g ? <Tag color={genderColor[g] || 'default'} style={{ textTransform: 'capitalize' }}>{g}</Tag> : '—',
+      render: (g) => {
+        const s = genderStyle[g];
+        if (!s) return '—';
+        return (
+          <Pill bg={s.bg} color={s.color}>
+            {s.icon}
+            <span style={{ textTransform: 'capitalize' }}>{g}</span>
+          </Pill>
+        );
+      },
     },
     {
       title: 'Blood Group',
       dataIndex: 'blood_group',
       key: 'blood_group',
-      render: (v) => v ? <Chip label={v} size="small" color="error" variant="outlined" /> : '—',
+      render: (v) => v ? (
+        <Pill bg="#FFEBEE" color="#C62828">
+          <BloodtypeIcon style={{ fontSize: 13 }} />
+          {v}
+        </Pill>
+      ) : '—',
     },
     {
       title: 'Date of Birth',
       dataIndex: 'dob',
       key: 'dob',
-      render: (v) => v || '—',
+      render: (v) => v ? (
+        <Pill bg="#EEF2FF" color="#3730A3">
+          <EventIcon style={{ fontSize: 13 }} />
+          {v}
+        </Pill>
+      ) : '—',
     },
     {
       title: 'Emergency Contact',
       dataIndex: 'emergency_contact',
       key: 'emergency_contact',
-      render: (v) => v || '—',
+      render: (v) => v ? (
+        <Pill bg="#ECFDF5" color="#047857">
+          <PhoneIcon style={{ fontSize: 13 }} />
+          {v}
+        </Pill>
+      ) : '—',
     },
     {
       title: 'Actions',
       key: 'actions',
       render: (_, record) => (
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
+        <Box sx={{ display: 'flex', gap: 0.7 }}>
           <Tooltip title="Edit">
-            <IconButton size="small" onClick={() => openEdit(record)} sx={{ color: '#1565C0' }}>
+            <IconButton size="small" onClick={() => openEdit(record)}
+              sx={{ color: '#1565C0', bgcolor: '#E3F0FF', '&:hover': { bgcolor: '#D0E4FF' } }}>
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton size="small" onClick={() => openDelete(record.id)} sx={{ color: '#C62828' }}>
+            <IconButton size="small" onClick={() => openDelete(record.id)}
+              sx={{ color: '#C62828', bgcolor: '#FFEBEE', '&:hover': { bgcolor: '#FFD7D7' } }}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -261,12 +386,20 @@ const PatientsPage = () => {
 
   return (
     <PageWrapper>
+      <AntdPopupZIndexFix />
+
       <Hero>
+        <HeroShield />
         <HeroText>
-          <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 0.5 }}>Patient Management</Typography>
-          <Typography sx={{ fontSize: 13.5, opacity: 0.92 }}>
+          <Typography sx={{ fontSize: 28, fontWeight: 800, mb: 1 }}>Patient Management</Typography>
+          <Typography sx={{ fontSize: 14.5, opacity: 0.92, lineHeight: 1.5 }}>
             View, register, and maintain encrypted patient health records for your tenant.
           </Typography>
+          <HeroBadges>
+            <HeroBadge><VerifiedUserIcon style={{ fontSize: 16 }} /> Secure Records</HeroBadge>
+            <HeroBadge><TravelExploreIcon style={{ fontSize: 16 }} /> Easy Search</HeroBadge>
+            <HeroBadge><HowToRegIcon style={{ fontSize: 16 }} /> Quick Registration</HeroBadge>
+          </HeroBadges>
         </HeroText>
       </Hero>
 
@@ -274,48 +407,61 @@ const PatientsPage = () => {
       {success && <Alert severity="success" onClose={clearStatus} sx={{ mb: 2 }}>{success}</Alert>}
 
       <StatsRow>
-        <StatCard>
-          <StatIconWrap bg="#E3F0FF" color="#1565C0"><PeopleAltIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#1565C0">
+          <StatIconWrap bg="#E3F0FF" color="#1565C0"><PeopleAltIcon /></StatIconWrap>
           <Box><StatValue>{total}</StatValue><StatLabel>Total Patients</StatLabel></Box>
         </StatCard>
-        <StatCard>
-          <StatIconWrap bg="#E3F2FD" color="#1976D2"><MaleIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#1976D2">
+          <StatIconWrap bg="#E3F2FD" color="#1976D2"><MaleIcon /></StatIconWrap>
           <Box><StatValue>{males}</StatValue><StatLabel>Male</StatLabel></Box>
         </StatCard>
-        <StatCard>
-          <StatIconWrap bg="#FCE4EC" color="#AD1457"><FemaleIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#AD1457">
+          <StatIconWrap bg="#FCE4EC" color="#AD1457"><FemaleIcon /></StatIconWrap>
           <Box><StatValue>{females}</StatValue><StatLabel>Female</StatLabel></Box>
         </StatCard>
-        <StatCard>
-          <StatIconWrap bg="#FFEBEE" color="#C62828"><BloodtypeIcon fontSize="small" /></StatIconWrap>
+        <StatCard accent="#C62828">
+          <StatIconWrap bg="#FFEBEE" color="#C62828"><BloodtypeIcon /></StatIconWrap>
           <Box><StatValue>{withBloodGroup}</StatValue><StatLabel>Blood Group on File</StatLabel></Box>
         </StatCard>
       </StatsRow>
 
       <TableCard>
         <TopRow>
-          <Typography variant="h6" fontWeight={700}>Patient Records</Typography>
+          <TitleGroup>
+            <PeopleAltIcon sx={{ color: '#1565C0' }} />
+            <Typography variant="h6" fontWeight={800}>Patient Records</Typography>
+          </TitleGroup>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
             <Input
               prefix={<SearchIcon style={{ color: '#718096', fontSize: 16 }} />}
               placeholder="Search patients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 230, borderRadius: 8 }}
+              style={{ width: 230, borderRadius: 999 }}
               allowClear
             />
+            <Tooltip title="Filter">
+              <RoundIconButton size="small">
+                <FilterListIcon fontSize="small" />
+              </RoundIconButton>
+            </Tooltip>
             <Tooltip title="Refresh">
               <span>
-                <IconButton onClick={fetchPatients} disabled={loading}>
-                  <RefreshIcon />
-                </IconButton>
+                <RoundIconButton size="small" onClick={fetchPatients} disabled={loading}>
+                  <RefreshIcon fontSize="small" />
+                </RoundIconButton>
               </span>
             </Tooltip>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
               onClick={openCreate}
-              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
+              sx={{
+                borderRadius: 999, textTransform: 'none', fontWeight: 700, px: 2.4,
+                background: 'linear-gradient(120deg,#1D4ED8,#1565C0)',
+                boxShadow: '0 4px 14px rgba(29,78,216,0.35)',
+                '&:hover': { background: 'linear-gradient(120deg,#1E40AF,#0D47A1)' },
+              }}
             >
               Add Patient
             </Button>
@@ -352,22 +498,32 @@ const PatientsPage = () => {
           )}
 
           <TextField
+            select
             label="Blood Group"
             value={form.blood_group}
             onChange={(e) => setForm({ ...form, blood_group: e.target.value })}
             size="small"
             fullWidth
-            placeholder="e.g. O+"
-          />
+          >
+            <MenuItem value="">Select blood group</MenuItem>
+            {BLOOD_GROUPS.map((bg) => (
+              <MenuItem key={bg} value={bg}>{bg}</MenuItem>
+            ))}
+          </TextField>
 
-          <TextField
-            label="Date of Birth"
-            value={form.dob}
-            onChange={(e) => setForm({ ...form, dob: e.target.value })}
-            size="small"
-            fullWidth
-            placeholder="YYYY-MM-DD"
-          />
+          <Box>
+            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary', fontWeight: 600 }}>
+              Date of Birth
+            </Typography>
+            <DatePicker
+              format="YYYY-MM-DD"
+              style={{ width: '100%' }}
+              size="large"
+              value={form.dob ? dayjs(form.dob) : null}
+              onChange={(date) => setForm({ ...form, dob: date ? date.format('YYYY-MM-DD') : '' })}
+              disabledDate={(current) => current && current > dayjs().endOf('day')}
+            />
+          </Box>
 
           <TextField
             select
