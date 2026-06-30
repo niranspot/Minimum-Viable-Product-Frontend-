@@ -13,6 +13,7 @@ import useAuth          from '../../modules/auth/hooks/useAuth';
 import { useThemeMode } from '../../context/ThemeContext';
 import { useLocation }  from 'react-router-dom';
 import { menuItems }    from './menuConfig';
+import useTenant from '../../modules/tenant/hooks/useTenant';
 
 const OPEN   = 240;
 const CLOSED = 64;
@@ -26,6 +27,7 @@ const roleColors = {
 };
 
 const Topbar = ({ sidebarOpen, isMobile, onMobileToggle }) => {
+  const { company_name } = useTenant();
   const { user }              = useSelector((state) => state.auth);
   const { logout }            = useAuth();
   const { mode, toggleTheme } = useThemeMode();

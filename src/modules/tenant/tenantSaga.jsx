@@ -1,23 +1,27 @@
-import { takeLatest, put } from 'redux-saga/effects';
-import { loginSuccess } from '../auth/authSlice';
-import { setTenant } from './tenantSlice';
+import { call, put, takeLatest } from 'redux-saga/effects';
+import { fetchTenantConfigAPI }  from './tenantAPI';
+import { getSubdomain }          from '../../utils/tenantUtils';
+import {
+  fetchTenantRequest,
+  fetchTenantSuccess,
+  fetchTenantFailure,
+} from './tenantSlice';
 
-
-// After login success, load tenant info from PHP
-function* handleLoadTenant(action) {
+function* handleFetchTenant() {
   try {
-    const { tenant_id } = action.payload;
+    const subdomain = getSubdomain();
+    if (!subdomain) return; // no tenant → main site
 
-    // Optional: fetch tenant name/code from PHP if needed later
-    // For now just set tenant_id from login payload
-    yield put(setTenant({ tenant_id }));
+    const res = yield call(fetchTenantConfigAPI, subdomain);
+    yield put(fetchTenantSuccess(res.data.data));
 
   } catch (error) {
-    console.error('Tenant load failed:', error);
+    yield put(fetchTenantFailure(
+      error.response?.data?.message || 'Failed to load tenant config'
+    ));
   }
 }
 
 export default function* tenantSaga() {
-  // Piggyback on loginSuccess — no extra dispatch needed
-  yield takeLatest(loginSuccess.type, handleLoadTenant);
+  yield takeLatest(fetchTenantRequest.type, handleFetchTenant);
 }

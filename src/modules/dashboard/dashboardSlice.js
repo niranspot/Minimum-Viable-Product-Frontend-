@@ -4,7 +4,6 @@ const initialState = {
   summary: null,
   appointments: null,
   prescriptions: null,
-  tenantAnalytics: null,
   loading: false,
   error: null,
 };
@@ -28,17 +27,7 @@ const dashboardSlice = createSlice({
       state.error = action.payload;
     },
 
-    fetchTenantAnalyticsRequest: (state) => {
-      state.loading = true;
-    },
-    fetchTenantAnalyticsSuccess: (state, action) => {
-      state.loading = false;
-      state.tenantAnalytics = action.payload;
-    },
-    fetchTenantAnalyticsFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
+
   },
 });
 
@@ -46,9 +35,6 @@ export const {
   fetchDashboardRequest,
   fetchDashboardSuccess,
   fetchDashboardFailure,
-  fetchTenantAnalyticsRequest,
-  fetchTenantAnalyticsSuccess,
-  fetchTenantAnalyticsFailure,
 } = dashboardSlice.actions;
 
 export default dashboardSlice.reducer;

@@ -5,10 +5,6 @@ const initialState = {
   isAuthenticated: false,
   loading: false,
   error: null,
-  // True once the one-time startup session check (csrf + token validate/refresh)
-  // has finished, regardless of outcome. ProtectedRoute waits for this before
-  // deciding to redirect — otherwise it can briefly read isAuthenticated=false
-  // before restoreSession's dispatch lands, flashing the login page.
   sessionChecked: false,
 };
 
