@@ -1,4 +1,4 @@
-const BASE = 'http://localhost/newphp1/Php_Tasks/012MinimumViableProduct/public/';
+const BASE = 'http://localhost/012-Minimum-Viable-Product/public';
 
 export const API_BASE = BASE;
 
