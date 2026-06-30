@@ -4,11 +4,9 @@ import { Navigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 
 const ROLE_HOME = {
-  patient: '/patient/appointments',
-  admin: '/dashboard',
-  doctor: '/dashboard',
-  nurse: '/dashboard',
-  pharmacist: '/dashboard',
+  patient: '/dashboard/appointments',
+  admin: '/dashboard', doctor: '/dashboard', nurse: '/dashboard',
+  pharmacist: '/dashboard', receptionist: '/dashboard',
 };
 
 const RoleProtectedRoute = ({ children, allowedRoles }) => {
@@ -23,13 +21,8 @@ const RoleProtectedRoute = ({ children, allowedRoles }) => {
     );
   }
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (!allowedRoles.includes(role)) {
-    return <Navigate to={ROLE_HOME[role] || '/login'} replace />;
-  }
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!allowedRoles.includes(role)) return <Navigate to={ROLE_HOME[role] || '/login'} replace />;
 
   return children;
 };

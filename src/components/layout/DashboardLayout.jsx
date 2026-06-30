@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Toolbar, useMediaQuery, useTheme, Drawer } from '@mui/material'; // Removed invalid ", state"
 import { Outlet } from 'react-router-dom'; // Added for nested route compatibility
 import Sidebar from './Sidebar';
 import Topbar  from './Topbar';
+import { fetchCsrf } from '../../hooks/useAppInit';
 
 const OPEN   = 240;
 const CLOSED = 64;
@@ -12,6 +13,10 @@ const DashboardLayout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme                   = useTheme();
   const isMobile                = useMediaQuery(theme.breakpoints.down('md'));
+
+  useEffect(() => {
+      fetchCsrf();
+  }, []);
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
