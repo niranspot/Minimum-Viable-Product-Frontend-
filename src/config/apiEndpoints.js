@@ -1,6 +1,16 @@
-const BASE = 'http://localhost/012-Minimum-Viable-Product/public';
+const getBase = () => {
+  const host = window.location.hostname;
+  const parts = host.split('.');
+  const ignored = ['www', 'api', 'medicloud'];
+  const hasTenant = parts.length > 1 && !ignored.includes(parts[0]);
 
-export const API_BASE = BASE;
+  if (hasTenant) {
+    return `http://${host}/012-Minimum-Viable-Product/public`;
+  }
+  return `http://lvh.me/012-Minimum-Viable-Product/public`;
+};
+
+export const API_BASE = getBase();
 
 export const ENDPOINTS = {
   LOGIN:           '/login',
@@ -11,18 +21,19 @@ export const ENDPOINTS = {
 
   // Patients (Mithra)
   PATIENTS:        '/patients',
- 
+  PATIENT_BY_ID:   (id) => `/patients/${id}`,
+
   // Appointments (Mithra)
-  APPOINTMENTS:    '/appointments',
- 
+  APPOINTMENTS:        '/appointments',
+  APPOINTMENT_BY_ID:   (id) => `/appointments/${id}`,
+
   // Calendar (Mithra)
   CALENDAR:        '/calendar',
- 
+
   // Dashboard (Mithra)
   DASHBOARD_SUMMARY:       '/dashboard/summary',
   DASHBOARD_APPOINTMENTS:  '/dashboard/appointments',
   DASHBOARD_PRESCRIPTIONS: '/dashboard/prescriptions',
-  DASHBOARD_TENANT:        '/dashboard/tenant-analytics',
 
   // Billing
   BILLING:         '/billing',              // POST (create), GET (list)

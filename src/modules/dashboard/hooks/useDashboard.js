@@ -1,15 +1,15 @@
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchDashboardRequest, fetchTenantAnalyticsRequest } from '../dashboardSlice';
+import { fetchDashboardRequest} from '../dashboardSlice';
 
 const useDashboard = () => {
   const dispatch = useDispatch();
-  const { summary, appointments, prescriptions, tenantAnalytics, loading, error } =
+  const { summary, appointments, prescriptions,  loading, error } =
     useSelector((s) => s.dashboard);
 
   const fetchDashboard       = () => dispatch(fetchDashboardRequest());
-  const fetchTenantAnalytics = () => dispatch(fetchTenantAnalyticsRequest());
 
-  return { summary, appointments, prescriptions, tenantAnalytics, loading, error, fetchDashboard, fetchTenantAnalytics };
+
+  return { summary, appointments, prescriptions,  loading, error, fetchDashboard};
 };
 
 export default useDashboard;

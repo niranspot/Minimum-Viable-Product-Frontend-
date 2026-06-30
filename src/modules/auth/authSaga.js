@@ -46,10 +46,10 @@ function* handleLogin(action) {
 function* handleLogout() {
   try {
     yield call(logoutAPI);
-  } catch (_) {}
-  finally {
     clearTokens();
     yield put(logoutSuccess());
+  } catch (error) {
+    console.error('Logout failed:', error.response?.data?.message);
   }
 }
 

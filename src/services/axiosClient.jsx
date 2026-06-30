@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { API_BASE } from '../config/apiEndpoints';
+import { getSubdomain } from '../utils/tenantUtils';
 
 // ── Access token → localStorage ────────────────────────
 export const setAccessToken = (token) => localStorage.setItem('access_token', token);
@@ -10,7 +11,7 @@ let csrfToken = null;
 export const setCsrfToken = (token) => { csrfToken = token; };
 
 export const getCsrfToken = ()      => csrfToken;
-
+const subdomain = getSubdomain();
 
 export const clearTokens = () => {
   localStorage.removeItem('access_token');
@@ -35,6 +36,7 @@ axiosClient.interceptors.request.use(
     const token = getAccessToken();
     if (token)     config.headers['Authorization'] = `Bearer ${token}`;
     if (csrfToken) config.headers['X-CSRF-Token']  = csrfToken;
+    if (subdomain) config.headers['X-Tenant']      = subdomain;
     return config;
   },
   (error) => Promise.reject(error)

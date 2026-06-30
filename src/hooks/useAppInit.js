@@ -11,13 +11,12 @@ import {
   sessionCheckComplete,
 } from "../modules/auth/authSlice";
 import { setTenant } from "../modules/tenant/tenantSlice";
+import { fetchTenantRequest } from '../modules/tenant/tenantSlice';
+import { getSubdomain }       from '../utils/tenantUtils';
+
 
 const useAppInit = () => {
   const dispatch = useDispatch();
-  // Read straight from the auth slice — the same source of truth that
-  // ProtectedRoute reads from. This guarantees "restoring" can only flip
-  // to false in the same (or a later) state update than isAuthenticated,
-  // so ProtectedRoute can never see a stale "not authenticated" in between.
   const sessionChecked = useSelector((state) => state.auth.sessionChecked);
 
   // ── 1. Fetch CSRF token ──────────────────────────────
@@ -31,7 +30,13 @@ const useAppInit = () => {
   };
 
   // ── 2. Restore user session from token ───────────────
-  const restoreFromToken = (payload) => {
+  const restoreFromToken = async (payload) => {
+      try {
+         const res = await axiosClient.get("/csrf-token");
+         setCsrfToken(res.data.data.csrf_token);
+      } catch {
+        console.warn("CSRF fetch failed");
+    }
     dispatch(
       restoreSession({
         user_id: payload.user_id,
@@ -92,9 +97,10 @@ const checkToken = async () => {
     const initialize = async () => {
       await fetchCsrf();
       await checkToken();
-      // Dispatched after restoreSession (if any) above, so both land in the
-      // same state update — ProtectedRoute never reads sessionChecked=true
-      // alongside a stale isAuthenticated=false.
+      const subdomain = getSubdomain();
+      if (subdomain) {
+        dispatch(fetchTenantRequest());
+      }
       dispatch(sessionCheckComplete());
     };
     initialize();

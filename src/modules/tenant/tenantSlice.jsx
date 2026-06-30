@@ -1,34 +1,53 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  tenant_id: null,
-  name: null,
-  code: null,
-  status: null,
-  loading: false,
-  error: null,
+  tenant_id:      null,
+  company_name:   null,
+  subdomain:      null,
+  plan:           null,
+  status:         null,
+  theme_settings: null,
+  loading:        false,
+  error:          null,
 };
 
 const tenantSlice = createSlice({
   name: 'tenant',
   initialState,
   reducers: {
-    setTenant: (state, action) => {
-      state.tenant_id = action.payload.tenant_id;
-      state.name = action.payload.name || null;
-      state.code = action.payload.code || null;
-      state.status = action.payload.status || 'active';
+    fetchTenantRequest: (state) => {
+      state.loading = true;
+      state.error   = null;
+    },
+    fetchTenantSuccess: (state, action) => {
+      state.loading       = false;
+      state.tenant_id     = action.payload.tenant_id;
+      state.company_name  = action.payload.company_name;
+      state.subdomain     = action.payload.subdomain;
+      state.plan          = action.payload.plan;
+      state.status        = action.payload.status;
+      state.theme_settings = action.payload.theme_settings;
+    },
+    fetchTenantFailure: (state, action) => {
       state.loading = false;
-      state.error = null;
+      state.error   = action.payload;
+    },
+    setTenant: (state, action) => {
+      state.tenant_id    = action.payload.tenant_id;
+      state.company_name = action.payload.company_name;
+      state.subdomain    = action.payload.subdomain;
+      state.plan         = action.payload.plan;
+      state.status       = action.payload.status;
     },
     clearTenant: (state) => {
-      state.tenant_id = null;
-      state.name = null;
-      state.code = null;
-      state.status = null;
+      Object.assign(state, initialState);
     },
   },
 });
 
-export const { setTenant, clearTenant } = tenantSlice.actions;
+export const {
+  fetchTenantRequest, fetchTenantSuccess,
+  fetchTenantFailure, setTenant, clearTenant,
+} = tenantSlice.actions;
+
 export default tenantSlice.reducer;
