@@ -185,7 +185,9 @@ const DashboardPage = () => {
   const { user } = useSelector((s) => s.auth);
   const isAdmin = user?.role === "admin";
 
-
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
   if (loading && !summary) {
     return (
