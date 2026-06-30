@@ -5,6 +5,8 @@ import RoleProtectedRoute from "./RoleProtectedRoute";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import { getSubdomain } from '../utils/tenantUtils';
 import PublicRoute from './PublicRoute'
+import DashboardIndexGate from './DashboardIndexGate'
+import RoleGate from "./RoleGate";
 
 // Public Landing Pages
 const LandingPage       = lazy(() => import('../pages/Landing/LandingPage'));
@@ -26,8 +28,7 @@ const PrescriptionsPage = lazy(() => import("../pages/Prescriptions/Prescription
 const CalendarPage      = lazy(() => import("../pages/Calendar/CalendarPage"));
 const NotificationsPage = lazy(() => import("../pages/Notifications/NotificationsPage"));
 
-const PatientAppointmentsPage = lazy(() => import("../pages/Appointments/PatientAppointmentsPage"));
-const PatientPrescriptionsPage = lazy(() => import("../pages/Prescriptions/PatientPrescriptionsPage"));
+
 
 
 const Loader = () => (
@@ -69,40 +70,22 @@ const AppRouter = () => {
 
  {/* Patient routes */}
 <Route
-  path="/patient/appointments"
-  element={
-    <RoleProtectedRoute allowedRoles={['patient']}>
-      <PatientAppointmentsPage />
-    </RoleProtectedRoute>
-  }
-/>
-<Route
-  path="/patient/prescriptions"
-  element={
-    <RoleProtectedRoute allowedRoles={['patient']}>
-      <PatientPrescriptionsPage />
-    </RoleProtectedRoute>
-  }
-/>
-
-{/* Staff dashboard routes */}
-<Route
   path="/dashboard"
   element={
-    <RoleProtectedRoute allowedRoles={['admin','doctor','nurse','pharmacist']}>
+    <RoleProtectedRoute allowedRoles={['admin','doctor','nurse','pharmacist','receptionist','patient']}>
       <DashboardLayout><Outlet /></DashboardLayout>
     </RoleProtectedRoute>
   }
 >
-  <Route index element={<DashboardPage />} />
-  <Route path="staff" element={<StaffPage />} />
-  <Route path="patients" element={<PatientsPage />} />
-  <Route path="appointments" element={<AppointmentsPage />} />
-  <Route path="communication" element={<CommunicationPage />} />
-  <Route path="billing" element={<BillingPage />} />
-  <Route path="prescriptions" element={<PrescriptionsPage />} />
-  <Route path="calendar" element={<CalendarPage />} />
-  <Route path="notifications" element={<NotificationsPage />} />
+  <Route index element={<DashboardIndexGate />} />
+  <Route path="staff" element={<RoleGate roles={['admin','doctor','nurse']}><StaffPage /></RoleGate>} />
+  <Route path="patients" element={<RoleGate roles={['doctor','nurse']}><PatientsPage /></RoleGate>} />
+  <Route path="appointments" element={<RoleGate roles={['doctor','nurse','receptionist','patient']}><AppointmentsPage /></RoleGate>} />
+  <Route path="communication" element={<RoleGate roles={['admin','doctor','nurse','patient']}><CommunicationPage /></RoleGate>} />
+  <Route path="billing" element={<RoleGate roles={['admin','pharmacist','patient']}><BillingPage /></RoleGate>} />
+  <Route path="prescriptions" element={<RoleGate roles={['admin','doctor','pharmacist','patient']}><PrescriptionsPage /></RoleGate>} />
+  <Route path="calendar" element={<RoleGate roles={['admin','doctor','receptionist']}><CalendarPage /></RoleGate>} />
+  <Route path="notifications" element={<RoleGate roles={['admin','doctor','nurse','receptionist','pharmacist']}><NotificationsPage /></RoleGate>} />
 </Route>
 
 <Route path="*" element={<Navigate to="/login" replace />} />

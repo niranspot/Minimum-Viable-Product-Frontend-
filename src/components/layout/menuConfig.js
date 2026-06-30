@@ -42,14 +42,14 @@ export const menuItems = [
     label: 'Communication',
     icon: <ChatIcon />,
     path: '/dashboard/communication',
-    roles: ['admin', 'doctor', 'nurse'],
+    roles: ['admin', 'doctor', 'nurse','patient'],
   },
   {
     key: 'billing',
     label: 'Billing',
     icon: <ReceiptIcon />,
     path: '/dashboard/billing',
-    roles: ['admin', 'pharmacist'],
+    roles: ['admin', 'pharmacist','patient'],
   },
    {
     key: 'prescriptions',

@@ -14,29 +14,21 @@ import { setTenant } from "../modules/tenant/tenantSlice";
 import { fetchTenantRequest } from '../modules/tenant/tenantSlice';
 import { getSubdomain }       from '../utils/tenantUtils';
 
+// ── Standalone CSRF fetcher — call this from DashboardLayout ──
+export const fetchCsrf = async () => {
+  try {
+    const res = await axiosClient.get("/csrf-token");
+    setCsrfToken(res.data.data.csrf_token);
+  } catch {
+    console.warn("CSRF fetch failed");
+  }
+};
 
 const useAppInit = () => {
   const dispatch = useDispatch();
   const sessionChecked = useSelector((state) => state.auth.sessionChecked);
 
-  // ── 1. Fetch CSRF token ──────────────────────────────
-  const fetchCsrf = async () => {
-    try {
-      const res = await axiosClient.get("/csrf-token");
-      setCsrfToken(res.data.data.csrf_token);
-    } catch {
-      console.warn("CSRF fetch failed");
-    }
-  };
-
-  // ── 2. Restore user session from token ───────────────
-  const restoreFromToken = async (payload) => {
-      try {
-         const res = await axiosClient.get("/csrf-token");
-         setCsrfToken(res.data.data.csrf_token);
-      } catch {
-        console.warn("CSRF fetch failed");
-    }
+  const restoreFromToken = (payload) => {
     dispatch(
       restoreSession({
         user_id: payload.user_id,
@@ -47,7 +39,6 @@ const useAppInit = () => {
     dispatch(setTenant({ tenant_id: payload.tenant_id }));
   };
 
-  // ── 3. Try refresh token ─────────────────────────────
   const tryRefresh = async () => {
     try {
       const res = await axiosClient.post("/refresh-token");
@@ -62,40 +53,36 @@ const useAppInit = () => {
     }
   };
 
-  // ── 4. Check existing token ──────────────────────────
-const checkToken = async () => {
-  try {
-    const token = getAccessToken();
-    const logged = localStorage.getItem('logged');
+  const checkToken = async () => {
+    try {
+      const token = getAccessToken();
+      const logged = localStorage.getItem('logged');
 
-    
-    if (!token && !logged) return;
+      if (!token && !logged) return;
 
-    if (!token && logged) {
-      await tryRefresh();
-      return;
+      if (!token && logged) {
+        await tryRefresh();
+        return;
+      }
+
+      const payload = decodeJWT(token);
+      if (!payload) throw new Error("Invalid token");
+
+      const isExpired = payload.exp * 1000 < Date.now();
+
+      if (isExpired) {
+        await tryRefresh();
+      } else {
+        restoreFromToken(payload);
+      }
+    } catch {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("logged");
     }
+  };
 
-    const payload = decodeJWT(token);
-    if (!payload) throw new Error("Invalid token");
-
-    const isExpired = payload.exp * 1000 < Date.now();
-
-    if (isExpired) {
-      await tryRefresh();
-    } else {
-      restoreFromToken(payload);
-    }
-  } catch {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("logged");
-  }
-};
-
-  // ── 5. Run on page load ──────────────────────────────
   useEffect(() => {
     const initialize = async () => {
-      await fetchCsrf();
       await checkToken();
       const subdomain = getSubdomain();
       if (subdomain) {
