@@ -2,16 +2,42 @@ import React, { useEffect, useState } from 'react';
 import {
   Box, Button, Typography, Chip, IconButton,
   Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, MenuItem, Tooltip, CircularProgress, Alert,
+  TextField, MenuItem, Tooltip, CircularProgress, Alert, Avatar,
 } from '@mui/material';
 import { Table, Input, Tag } from 'antd';
-import AddIcon    from '@mui/icons-material/Add';
-import EditIcon   from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import styled     from 'styled-components';
-import usePatients from '../../modules/patients/hooks/usePatients';
-import { useSelector } from 'react-redux';
+import AddIcon       from '@mui/icons-material/Add';
+import EditIcon       from '@mui/icons-material/Edit';
+import DeleteIcon     from '@mui/icons-material/Delete';
+import SearchIcon     from '@mui/icons-material/Search';
+import RefreshIcon    from '@mui/icons-material/Refresh';
+import PeopleAltIcon  from '@mui/icons-material/PeopleAlt';
+import MaleIcon       from '@mui/icons-material/Male';
+import FemaleIcon     from '@mui/icons-material/Female';
+import BloodtypeIcon  from '@mui/icons-material/Bloodtype';
+import styled         from 'styled-components';
+import usePatients    from '../../modules/patients/hooks/usePatients';
+
+// ── Hero banner (Unsplash) ──────────────────────────────────────
+const Hero = styled.div`
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 150px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  padding: 28px 32px;
+  background-image:
+    linear-gradient(120deg, rgba(21,101,192,0.92) 10%, rgba(21,101,192,0.55) 60%, rgba(21,101,192,0.15) 100%),
+    url('https://source.unsplash.com/1600x500/?hospital,patient,doctor');
+  background-size: cover;
+  background-position: center;
+`;
+
+const HeroText = styled.div`
+  color: #fff;
+  max-width: 560px;
+`;
 
 // ── Styled Components ──────────────────────────────────────────
 const PageWrapper = styled.div`
@@ -30,22 +56,42 @@ const StatCard = styled.div`
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.divider};
   border-radius: 12px;
-  padding: 16px 24px;
+  padding: 16px 22px;
   flex: 1;
-  min-width: 140px;
+  min-width: 150px;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  }
 `;
 
-const StatValue = styled.span`
-  font-size: 28px;
-  font-weight: 700;
+const StatIconWrap = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: ${({ bg }) => bg || '#E3F0FF'};
   color: ${({ color }) => color || '#1565C0'};
 `;
 
+const StatValue = styled.span`
+  font-size: 24px;
+  font-weight: 700;
+  color: ${({ theme }) => theme.text};
+  line-height: 1.1;
+  display: block;
+`;
+
 const StatLabel = styled.span`
-  font-size: 12px;
+  font-size: 11.5px;
   color: ${({ theme }) => theme.textMuted};
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -68,7 +114,7 @@ const TopRow = styled.div`
 `;
 
 // ── Gender tag colors ──────────────────────────────────────────
-const genderColor = { male: 'blue', female: 'pink', other: 'default' };
+const genderColor = { male: 'blue', female: 'magenta', other: 'default' };
 
 // ── Default form state ─────────────────────────────────────────
 const emptyForm = {
@@ -82,48 +128,42 @@ const emptyForm = {
 
 // ── Component ──────────────────────────────────────────────────
 const PatientsPage = () => {
-  const { list, loading, error, success, fetchPatients, createPatient, updatePatient, deletePatient, clearStatus } = usePatients();
-  const { user } = useSelector((s) => s.auth);
+  const {
+    list, loading, error, success,
+    fetchPatients, createPatient, updatePatient, deletePatient, clearStatus,
+  } = usePatients();
 
   const [search,     setSearch]     = useState('');
   const [modalOpen,  setModalOpen]  = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState(null);   // patient object for edit
+  const [editTarget, setEditTarget] = useState(null);
   const [deleteId,   setDeleteId]   = useState(null);
   const [form,       setForm]       = useState(emptyForm);
 
-  // Fetch on mount
-  useEffect(() => { fetchPatients(); }, []);
+  useEffect(() => { fetchPatients(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Close modal on success
   useEffect(() => {
     if (success) {
       setModalOpen(false);
       setDeleteOpen(false);
       setForm(emptyForm);
       setEditTarget(null);
-      // Clear after 3s
       const t = setTimeout(clearStatus, 3000);
       return () => clearTimeout(t);
     }
-  }, [success]);
+  }, [success]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // ── Filtered list ──────────────────────────────────────────
   const filtered = list.filter((p) => {
     const term = search.toLowerCase();
     return (
       p.name?.toLowerCase().includes(term) ||
       p.email?.toLowerCase().includes(term) ||
-      p.gender?.toLowerCase().includes(term)
+      p.gender?.toLowerCase().includes(term) ||
+      p.blood_group?.toLowerCase().includes(term)
     );
   });
 
-  // ── Handlers ──────────────────────────────────────────────
-  const openCreate = () => {
-    setEditTarget(null);
-    setForm(emptyForm);
-    setModalOpen(true);
-  };
+  const openCreate = () => { setEditTarget(null); setForm(emptyForm); setModalOpen(true); };
 
   const openEdit = (record) => {
     setEditTarget(record);
@@ -138,15 +178,12 @@ const PatientsPage = () => {
     setModalOpen(true);
   };
 
-  const openDelete = (id) => {
-    setDeleteId(id);
-    setDeleteOpen(true);
-  };
+  const openDelete = (id) => { setDeleteId(id); setDeleteOpen(true); };
 
   const handleSubmit = () => {
     if (!form.user_id && !editTarget) return;
     if (editTarget) {
-      const { user_id, ...updateData } = form; // user_id not sent on update
+      const { user_id, ...updateData } = form; // user_id immutable on update
       updatePatient(editTarget.id, updateData);
     } else {
       createPatient(form);
@@ -156,20 +193,25 @@ const PatientsPage = () => {
   const handleDelete = () => deletePatient(deleteId);
 
   // ── Stats ─────────────────────────────────────────────────
-  const total  = list.length;
-  const males  = list.filter((p) => p.gender === 'male').length;
+  const total   = list.length;
+  const males   = list.filter((p) => p.gender === 'male').length;
   const females = list.filter((p) => p.gender === 'female').length;
+  const withBloodGroup = list.filter((p) => p.blood_group).length;
 
-  // ── Ant Design Table Columns ──────────────────────────────
   const columns = [
     {
-      title: 'Name',
+      title: 'Patient',
       dataIndex: 'name',
       key: 'name',
       render: (name, rec) => (
-        <Box>
-          <Typography variant="body2" fontWeight={600}>{name || '—'}</Typography>
-          <Typography variant="caption" sx={{color:"text.secondary"}}>{rec.email}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+          <Avatar sx={{ width: 32, height: 32, fontSize: 13, bgcolor: '#E3F0FF', color: '#1565C0', fontWeight: 700 }}>
+            {(name || '?').charAt(0).toUpperCase()}
+          </Avatar>
+          <Box>
+            <Typography variant="body2" fontWeight={600}>{name || '—'}</Typography>
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>{rec.email}</Typography>
+          </Box>
         </Box>
       ),
     },
@@ -177,7 +219,7 @@ const PatientsPage = () => {
       title: 'Gender',
       dataIndex: 'gender',
       key: 'gender',
-      render: (g) => g ? <Tag color={genderColor[g] || 'default'}>{g}</Tag> : '—',
+      render: (g) => g ? <Tag color={genderColor[g] || 'default'} style={{ textTransform: 'capitalize' }}>{g}</Tag> : '—',
     },
     {
       title: 'Blood Group',
@@ -219,44 +261,56 @@ const PatientsPage = () => {
 
   return (
     <PageWrapper>
+      <Hero>
+        <HeroText>
+          <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 0.5 }}>Patient Management</Typography>
+          <Typography sx={{ fontSize: 13.5, opacity: 0.92 }}>
+            View, register, and maintain encrypted patient health records for your tenant.
+          </Typography>
+        </HeroText>
+      </Hero>
 
-      {/* Alerts */}
       {error   && <Alert severity="error"   onClose={clearStatus} sx={{ mb: 2 }}>{error}</Alert>}
       {success && <Alert severity="success" onClose={clearStatus} sx={{ mb: 2 }}>{success}</Alert>}
 
-      {/* Stat Cards */}
       <StatsRow>
         <StatCard>
-          <StatValue color="#1565C0">{total}</StatValue>
-          <StatLabel>Total Patients</StatLabel>
+          <StatIconWrap bg="#E3F0FF" color="#1565C0"><PeopleAltIcon fontSize="small" /></StatIconWrap>
+          <Box><StatValue>{total}</StatValue><StatLabel>Total Patients</StatLabel></Box>
         </StatCard>
         <StatCard>
-          <StatValue color="#1976D2">{males}</StatValue>
-          <StatLabel>Male</StatLabel>
+          <StatIconWrap bg="#E3F2FD" color="#1976D2"><MaleIcon fontSize="small" /></StatIconWrap>
+          <Box><StatValue>{males}</StatValue><StatLabel>Male</StatLabel></Box>
         </StatCard>
         <StatCard>
-          <StatValue color="#7B1FA2">{females}</StatValue>
-          <StatLabel>Female</StatLabel>
+          <StatIconWrap bg="#FCE4EC" color="#AD1457"><FemaleIcon fontSize="small" /></StatIconWrap>
+          <Box><StatValue>{females}</StatValue><StatLabel>Female</StatLabel></Box>
         </StatCard>
         <StatCard>
-          <StatValue color="#2E7D32">{total - males - females}</StatValue>
-          <StatLabel>Other / Unknown</StatLabel>
+          <StatIconWrap bg="#FFEBEE" color="#C62828"><BloodtypeIcon fontSize="small" /></StatIconWrap>
+          <Box><StatValue>{withBloodGroup}</StatValue><StatLabel>Blood Group on File</StatLabel></Box>
         </StatCard>
       </StatsRow>
 
-      {/* Table Card */}
       <TableCard>
         <TopRow>
-          <Typography variant="h4" fontWeight={700}>Patient Records</Typography>
+          <Typography variant="h6" fontWeight={700}>Patient Records</Typography>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
             <Input
               prefix={<SearchIcon style={{ color: '#718096', fontSize: 16 }} />}
               placeholder="Search patients..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 240, borderRadius: 8 }}
+              style={{ width: 230, borderRadius: 8 }}
               allowClear
             />
+            <Tooltip title="Refresh">
+              <span>
+                <IconButton onClick={fetchPatients} disabled={loading}>
+                  <RefreshIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -275,7 +329,7 @@ const PatientsPage = () => {
           loading={loading}
           pagination={{ pageSize: 10, showSizeChanger: false }}
           size="middle"
-          scroll={{ x: 700 }}
+          scroll={{ x: 760 }}
         />
       </TableCard>
 
@@ -285,7 +339,6 @@ const PatientsPage = () => {
           {editTarget ? 'Edit Patient' : 'Add New Patient'}
         </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
-
           {!editTarget && (
             <TextField
               label="User ID"
@@ -294,7 +347,7 @@ const PatientsPage = () => {
               size="small"
               fullWidth
               required
-              helperText="Must be a registered user with role=patient"
+              helperText="Must be an active, registered user with role = patient"
             />
           )}
 
@@ -355,7 +408,7 @@ const PatientsPage = () => {
             variant="contained"
             onClick={handleSubmit}
             disabled={loading}
-            startIcon={loading && <CircularProgress size={14} />}
+            startIcon={loading && <CircularProgress size={14} color="inherit" />}
           >
             {editTarget ? 'Save Changes' : 'Create Patient'}
           </Button>
@@ -375,13 +428,12 @@ const PatientsPage = () => {
             color="error"
             onClick={handleDelete}
             disabled={loading}
-            startIcon={loading && <CircularProgress size={14} />}
+            startIcon={loading && <CircularProgress size={14} color="inherit" />}
           >
             Delete
           </Button>
         </DialogActions>
       </Dialog>
-
     </PageWrapper>
   );
 };

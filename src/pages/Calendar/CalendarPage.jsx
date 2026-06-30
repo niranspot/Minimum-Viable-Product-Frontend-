@@ -1,9 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Alert, Chip } from '@mui/material';
+import { Box, Typography, Alert, Chip, IconButton, Tooltip } from '@mui/material';
 import { Calendar, Badge, Spin } from 'antd';
-import dayjs from 'dayjs';
-import styled from 'styled-components';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import dayjs       from 'dayjs';
+import styled      from 'styled-components';
 import useCalendar from '../../modules/calendar/hooks/useCalendar';
+
+// ── Hero banner (Unsplash) ──────────────────────────────────────
+const Hero = styled.div`
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 150px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 32px;
+  background-image:
+    linear-gradient(120deg, rgba(229,62,62,0.90) 10%, rgba(229,62,62,0.5) 60%, rgba(229,62,62,0.12) 100%),
+    url('https://source.unsplash.com/1600x500/?calendar,schedule,clinic');
+  background-size: cover;
+  background-position: center;
+`;
+
+const HeroText = styled.div`
+  color: #fff;
+  max-width: 560px;
+`;
 
 // ── Styled ─────────────────────────────────────────────────────
 const PageWrapper = styled.div`
@@ -16,8 +40,8 @@ const CalendarCard = styled.div`
   border: 1px solid ${({ theme }) => theme.divider};
   border-radius: 12px;
   padding: 20px;
-  position: relative; /* Context helper for overlay loading states */
-  
+  position: relative;
+
   .ant-picker-calendar {
     background: transparent;
   }
@@ -28,6 +52,14 @@ const LegendRow = styled.div`
   gap: 16px;
   flex-wrap: wrap;
   margin-bottom: 20px;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const LegendChips = styled.div`
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 `;
 
 const EventPopover = styled.div`
@@ -66,12 +98,18 @@ const CalendarPage = () => {
   // ── Fetch whenever the displayed month changes ───────────────
   useEffect(() => {
     const monthKey = value.format('YYYY-MM');
-    if (monthKey === fetchedMonth) return; 
+    if (monthKey === fetchedMonth) return;
     const from = value.startOf('month').format('YYYY-MM-DD');
     const to   = value.endOf('month').format('YYYY-MM-DD');
     fetchCalendar(from, to);
     setFetchedMonth(monthKey);
   }, [value, fetchedMonth, fetchCalendar]);
+
+  const refresh = () => {
+    const from = value.startOf('month').format('YYYY-MM-DD');
+    const to   = value.endOf('month').format('YYYY-MM-DD');
+    fetchCalendar(from, to);
+  };
 
   // ── Build events map keyed by YYYY-MM-DD ─────────────────────
   const eventsByDate = {};
@@ -83,16 +121,12 @@ const CalendarPage = () => {
 
   const selectedEvents = selectedDate ? (eventsByDate[selectedDate] || []) : [];
 
-  const handlePanelChange = (date) => {
-    setValue(date); 
-  };
+  const handlePanelChange = (date) => { setValue(date); };
 
   const handleSelect = (date, { source }) => {
     if (source === 'date') {
       setSelectedDate(date.format('YYYY-MM-DD'));
-      if (!date.isSame(value, 'month')) {
-        setValue(date);
-      }
+      if (!date.isSame(value, 'month')) setValue(date);
     }
   };
 
@@ -126,23 +160,40 @@ const CalendarPage = () => {
 
   return (
     <PageWrapper>
+      <Hero>
+        <HeroText>
+          <Typography sx={{ fontSize: 22, fontWeight: 700, mb: 0.5 }}>Appointment Calendar</Typography>
+          <Typography sx={{ fontSize: 13.5, opacity: 0.92 }}>
+            Browse confirmed, pending, and completed appointments by day across your tenant.
+          </Typography>
+        </HeroText>
+      </Hero>
+
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {/* Legend */}
       <LegendRow>
-        {Object.entries(chipStyle).map(([status, style]) => (
-          <Chip
-            key={status}
-            label={status.charAt(0).toUpperCase() + status.slice(1)}
-            size="small"
-            sx={{ bgcolor: style.bg, color: style.color, fontWeight: 600 }}
-          />
-        ))}
+        <LegendChips>
+          {Object.entries(chipStyle).map(([status, style]) => (
+            <Chip
+              key={status}
+              label={status.charAt(0).toUpperCase() + status.slice(1)}
+              size="small"
+              sx={{ bgcolor: style.bg, color: style.color, fontWeight: 600 }}
+            />
+          ))}
+        </LegendChips>
+        <Tooltip title="Refresh">
+          <span>
+            <IconButton onClick={refresh} disabled={loading}>
+              <RefreshIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
       </LegendRow>
 
       <CalendarCard>
-        {/* AntD Spin natively covers the node structure smoothly without unmounting */}
-        <Spin spinning={loading && !events.length} size="large" description="Loading appointments...">
+        <Spin spinning={loading && !events.length} size="large" tip="Loading appointments...">
           <Calendar
             value={value}
             cellRender={cellRender}
@@ -154,7 +205,6 @@ const CalendarPage = () => {
         {/* Selected day detail */}
         {selectedDate && (
           <EventPopover>
-            {/* Swapped variant h4 to h6 for correct typographic weighting */}
             <Typography variant="h6" fontWeight={700} mb={1.5} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               {dayjs(selectedDate).format('D MMMM YYYY')}
               <Typography component="span" variant="body2" color="text.secondary">
@@ -163,9 +213,7 @@ const CalendarPage = () => {
             </Typography>
 
             {selectedEvents.length === 0 ? (
-              <Typography variant="body2" color="text.secondary">
-                No appointments on this day.
-              </Typography>
+              <Typography variant="body2" color="text.secondary">No appointments on this day.</Typography>
             ) : (
               selectedEvents.map((e, i) => (
                 <Box
@@ -194,6 +242,7 @@ const CalendarPage = () => {
                     sx={{
                       fontSize: 10,
                       height: 22,
+                      textTransform: 'capitalize',
                       bgcolor: chipStyle[e.status]?.bg    || '#E3F2FD',
                       color:   chipStyle[e.status]?.color || '#1565C0',
                       fontWeight: 600,
