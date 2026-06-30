@@ -56,7 +56,7 @@ export const menuItems = [
     label: 'Prescriptions',
     icon: <MedicationIcon />,
     path: '/dashboard/prescriptions',
-    roles: ['admin', 'doctor', 'pharmacist'],
+    roles: ['admin', 'doctor', 'pharmacist','patient'],
   },
   {
     key: 'calendar',
