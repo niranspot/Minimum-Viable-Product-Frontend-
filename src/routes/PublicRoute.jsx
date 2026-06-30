@@ -4,7 +4,7 @@ import { Navigate } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
 
 const ROLE_HOME = {
-  patient: '/patient/appointments',
+  patient: '/dashboard/appointments',
   admin: '/dashboard',
   doctor: '/dashboard',
   nurse: '/dashboard',

@@ -198,9 +198,6 @@ const LoginPage = () => {
     if (remembered) { setEmail(remembered); setRememberMe(true); }
   }, []);
 
-  useEffect(() => {
-    if (isAuthenticated) navigate('/dashboard');
-  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     if (error) clearAuthError();
