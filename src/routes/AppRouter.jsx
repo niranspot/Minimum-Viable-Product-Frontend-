@@ -1,7 +1,7 @@
 import React, { Suspense, lazy } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { CircularProgress, Box } from "@mui/material";
-import ProtectedRoute from "./ProtectedRoute";
+import RoleProtectedRoute from "./RoleProtectedRoute";
 import DashboardLayout from "../components/layout/DashboardLayout";
 import { getSubdomain } from '../utils/tenantUtils';
 import PublicRoute from './PublicRoute'
@@ -25,6 +25,10 @@ const BillingPage       = lazy(() => import("../pages/Billing/BillingPage"));
 const PrescriptionsPage = lazy(() => import("../pages/Prescriptions/PrescriptionsPage"));
 const CalendarPage      = lazy(() => import("../pages/Calendar/CalendarPage"));
 const NotificationsPage = lazy(() => import("../pages/Notifications/NotificationsPage"));
+
+const PatientAppointmentsPage = lazy(() => import("../pages/Appointments/PatientAppointmentsPage"));
+const PatientPrescriptionsPage = lazy(() => import("../pages/Prescriptions/PatientPrescriptionsPage"));
+
 
 const Loader = () => (
   <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
@@ -63,24 +67,46 @@ const AppRouter = () => {
           {/* <Route path="/change-password"  element={<ChangePasswordPage />} /> */}
           {/* remove /signup from tenant subdomain too */}
 
-          <Route
-            path="/dashboard"
-            element={ <ProtectedRoute><DashboardLayout> <Outlet /> </DashboardLayout></ProtectedRoute>
-            }
-          >
-            <Route index                element={<DashboardPage />} />
-            <Route path="staff"         element={<StaffPage />} />
-            <Route path="patients"      element={<PatientsPage />} />
-            <Route path="appointments"  element={<AppointmentsPage />} />
-            <Route path="communication" element={<CommunicationPage />} />
-            <Route path="billing"       element={<BillingPage />} />
-            <Route path="prescriptions" element={<PrescriptionsPage />} />
-            <Route path="calendar"      element={<CalendarPage />} />
-            <Route path="notifications" element={<NotificationsPage />} />
-          </Route>
+ {/* Patient routes */}
+<Route
+  path="/patient/appointments"
+  element={
+    <RoleProtectedRoute allowedRoles={['patient']}>
+      <PatientAppointmentsPage />
+    </RoleProtectedRoute>
+  }
+/>
+<Route
+  path="/patient/prescriptions"
+  element={
+    <RoleProtectedRoute allowedRoles={['patient']}>
+      <PatientPrescriptionsPage />
+    </RoleProtectedRoute>
+  }
+/>
 
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+{/* Staff dashboard routes */}
+<Route
+  path="/dashboard"
+  element={
+    <RoleProtectedRoute allowedRoles={['admin','doctor','nurse','pharmacist']}>
+      <DashboardLayout><Outlet /></DashboardLayout>
+    </RoleProtectedRoute>
+  }
+>
+  <Route index element={<DashboardPage />} />
+  <Route path="staff" element={<StaffPage />} />
+  <Route path="patients" element={<PatientsPage />} />
+  <Route path="appointments" element={<AppointmentsPage />} />
+  <Route path="communication" element={<CommunicationPage />} />
+  <Route path="billing" element={<BillingPage />} />
+  <Route path="prescriptions" element={<PrescriptionsPage />} />
+  <Route path="calendar" element={<CalendarPage />} />
+  <Route path="notifications" element={<NotificationsPage />} />
+</Route>
+
+<Route path="*" element={<Navigate to="/login" replace />} />
+</Routes>
       </Suspense>
     </BrowserRouter>
 
