@@ -83,6 +83,7 @@ const useAppInit = () => {
 
   useEffect(() => {
     const initialize = async () => {
+      await fetchCsrf();
       await checkToken();
       const subdomain = getSubdomain();
       if (subdomain) {

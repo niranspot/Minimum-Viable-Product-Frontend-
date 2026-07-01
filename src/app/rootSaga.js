@@ -10,6 +10,7 @@ import chatSaga from '../modules/chat/chatSaga';
 import billingSaga from '../modules/billing/billingSaga';
 import prescriptionSaga from '../modules/prescriptions/prescriptionSaga';
 import staffSaga from '../modules/staff/staffSaga';
+import userSaga from '../modules/users/userSaga'
 
 export default function* rootSaga() {
   yield all([
@@ -23,5 +24,6 @@ export default function* rootSaga() {
     billingSaga(),
     prescriptionSaga(),
     staffSaga(),
+    userSaga()
   ]);
 }

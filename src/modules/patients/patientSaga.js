@@ -1,12 +1,14 @@
 import { call, put, takeLatest } from 'redux-saga/effects';
 import {
   fetchPatientsAPI,
+  fetchPatientByIdAPI,
   createPatientAPI,
   updatePatientAPI,
   deletePatientAPI,
 } from './patientAPI';
 import {
   fetchPatientsRequest, fetchPatientsSuccess, fetchPatientsFailure,
+  fetchPatientByIdRequest, fetchPatientByIdSuccess, fetchPatientByIdFailure,
   createPatientRequest, createPatientSuccess, createPatientFailure,
   updatePatientRequest, updatePatientSuccess, updatePatientFailure,
   deletePatientRequest, deletePatientSuccess, deletePatientFailure,
@@ -18,6 +20,15 @@ function* handleFetchPatients() {
     yield put(fetchPatientsSuccess(res.data.data));
   } catch (err) {
     yield put(fetchPatientsFailure(err.response?.data?.message || 'Failed to fetch patients'));
+  }
+}
+
+function* handleFetchPatientById(action) {
+  try {
+    const res = yield call(fetchPatientByIdAPI, action.payload);
+    yield put(fetchPatientByIdSuccess(res.data.data));
+  } catch (err) {
+    yield put(fetchPatientByIdFailure(err.response?.data?.message || 'Failed to fetch patient'));
   }
 }
 
@@ -54,8 +65,9 @@ function* handleDeletePatient(action) {
 }
 
 export default function* patientSaga() {
-  yield takeLatest(fetchPatientsRequest.type,  handleFetchPatients);
-  yield takeLatest(createPatientRequest.type,  handleCreatePatient);
-  yield takeLatest(updatePatientRequest.type,  handleUpdatePatient);
-  yield takeLatest(deletePatientRequest.type,  handleDeletePatient);
+  yield takeLatest(fetchPatientsRequest.type,     handleFetchPatients);
+  yield takeLatest(fetchPatientByIdRequest.type,  handleFetchPatientById);
+  yield takeLatest(createPatientRequest.type,     handleCreatePatient);
+  yield takeLatest(updatePatientRequest.type,     handleUpdatePatient);
+  yield takeLatest(deletePatientRequest.type,     handleDeletePatient);
 }

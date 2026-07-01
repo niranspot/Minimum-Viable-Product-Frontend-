@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Toolbar, useMediaQuery, useTheme, Drawer } from '@mui/material'; // Removed invalid ", state"
+import { Box, Toolbar, useMediaQuery, useTheme, Drawer ,IconButton} from '@mui/material'; // Removed invalid ", state"
 import { Outlet } from 'react-router-dom'; // Added for nested route compatibility
 import Sidebar from './Sidebar';
 import Topbar  from './Topbar';
 import { fetchCsrf } from '../../hooks/useAppInit';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const OPEN   = 240;
 const CLOSED = 64;
@@ -14,9 +15,7 @@ const DashboardLayout = ({ children }) => {
   const theme                   = useTheme();
   const isMobile                = useMediaQuery(theme.breakpoints.down('md'));
 
-  useEffect(() => {
-      fetchCsrf();
-  }, []);
+
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
@@ -48,12 +47,23 @@ const DashboardLayout = ({ children }) => {
           width: isMobile ? '100%' : 'auto',
         }}
       >
-        <Topbar
-          sidebarOpen={open}
-          isMobile={isMobile}
-          onMobileToggle={() => setMobileOpen(true)}
-        />
-        <Toolbar sx={{ minHeight: '56px !important' }} />
+        {/* Mobile menu button */}
+        {isMobile && (
+          <Box sx={{
+            position: 'sticky', top: 0, zIndex: 100,
+            px: 2, py: 1,
+            bgcolor: 'background.paper',
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+            display: 'flex',
+            alignItems: 'center',
+          }}>
+            <IconButton onClick={() => setMobileOpen(true)} sx={{ color: 'text.primary' }}>
+              <MenuIcon />
+            </IconButton>
+          </Box>
+        )}
+       
         <Box sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
           {/* Fallback to legacy children prop if passed, otherwise load React Router's Outlet */}
           {children || <Outlet />}
