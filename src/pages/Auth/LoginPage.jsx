@@ -13,6 +13,8 @@ import useAuth from '../../modules/auth/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import useTenant from '../../modules/tenant/hooks/useTenant';
 import styled, { keyframes } from 'styled-components';
+import { useTheme } from "@mui/material/styles";
+
 
 const fadeIn = keyframes`
   from { opacity: 0; transform: translateY(20px); }
@@ -23,8 +25,8 @@ const fadeIn = keyframes`
 const PageWrapper = styled.div`
   min-height: 100vh;
   display: flex;
-  background: #F7F9FC;
-
+    background: ${({ theme }) => theme.bg};
+  transition: background .3s ease;
   @media (max-width: 768px) {
     flex-direction: column;
   }
@@ -124,7 +126,9 @@ const FormSide = styled.div`
   align-items: center;
   justify-content: center;
   padding: 40px;
-  background: #fff;
+  background: ${({ theme }) => theme.surface};
+color: ${({ theme }) => theme.text};
+transition: background .3s ease;
   animation: ${fadeIn} 0.5s ease;
 
   @media (max-width: 768px) {
@@ -151,7 +155,13 @@ const FormSide = styled.div`
   width: 100%;
   max-width: 440px;
   border-radius: 16px !important;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3) !important;
+  background: ${({theme})=>theme.surface};
+border:1px solid ${({theme})=>theme.divider};
+
+box-shadow:${({theme}) =>
+  theme.bg === '#0D1117'
+    ? '0 20px 60px rgba(0,0,0,.5)'
+    : '0 20px 60px rgba(0,0,0,.08)'};
 `;
 
 // ── Auth page wrapper for Register/ChangePassword ──────
@@ -170,14 +180,14 @@ const AuthPageWrapper = styled.div`
   align-items: center;
   gap: 12px;
   margin: 16px 0;
-  color: #718096;
+  color: ${({ theme }) => theme.textMuted};
   font-size: 13px;
 
   &::before, &::after {
     content: '';
     flex: 1;
     height: 1px;
-    background: #E2E8F0;
+    background: ${({ theme }) => theme.divider};
   }
 `;
 
@@ -187,6 +197,10 @@ const LoginPage = () => {
   const { login, loading, error, isAuthenticated, clearAuthError } = useAuth();
   const { company_name } = useTenant();
   const navigate = useNavigate();
+  const theme = useTheme();
+  
+
+ 
 
   const [email,        setEmail]        = useState('');
   const [password,     setPassword]     = useState('');
@@ -278,10 +292,10 @@ const LoginPage = () => {
             </Typography>
           </LogoBox>
 
-          <Typography variant="h3" sx={{fontWeight:700 ,color:tokens.dark ,mb:0.5}}>
+          <Typography variant="h3" sx={{fontWeight:700 ,color: theme.palette.text.primary ,mb:0.5}}>
             Welcome back
           </Typography>
-          <Typography variant="body2" sx={{color:tokens.grey ,mb:3}}>
+          <Typography variant="body2" sx={{color: theme.palette.text.secondary ,mb:3}}>
             Sign in to {company_name || 'your hospital system'}
           </Typography>
 
@@ -300,12 +314,12 @@ const LoginPage = () => {
               onChange={(e) => setEmail(e.target.value)}
               sx={{ mb: 2 }}
               disabled={loading}
+              placeholder="John@gmail.com"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <EmailOutlined sx={{ color: tokens.grey, fontSize: 20 }} />
-                      {/* <Person sx={{ color: tokens.grey, fontSize: 20 }} /> */}
+                      <EmailOutlined sx={{ color: theme.palette.text.secondary, fontSize: 20 }} />
                     </InputAdornment>
                   ),
                 },
@@ -320,11 +334,12 @@ const LoginPage = () => {
               onChange={(e) => setPassword(e.target.value)}
               sx={{ mb: 1 }}
               disabled={loading}
+              placeholder="Password"
               slotProps={{
                 input: {
                   startAdornment: (
                     <InputAdornment position="start">
-                      <LockOutlined sx={{ color: tokens.grey, fontSize: 20 }} />
+                      <LockOutlined sx={{ color: theme.palette.text.secondary, fontSize: 20 }} />
                     </InputAdornment>
                   ),
                   endAdornment: (
@@ -371,7 +386,7 @@ const LoginPage = () => {
             </Button>
 
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="body2" color={tokens.grey}>
+              <Typography variant="body2" color="text.secondary">
                 Need an account?{' '}
                 <Typography
                   component="span" variant="body2"
@@ -388,12 +403,12 @@ const LoginPage = () => {
           {/* Security note */}
           <Box sx={{
             mt: 4, pt: 3,
-            borderTop: `1px solid ${tokens.border}`,
+            borderTop: `1px solid ${theme.palette.divider}`,
             display: 'flex', alignItems: 'center',
             gap: 1,
           }}>
-            <VerifiedUser sx={{ fontSize: 16, color: tokens.green }} />
-            <Typography variant="caption" color={tokens.grey}>
+            <VerifiedUser sx={{ml:5, fontSize: 16, color: theme.palette.success.main}} />
+            <Typography variant="caption" color="text.secondary">
               Secured with 256-bit SSL encryption. Your data is safe.
             </Typography>
           </Box>

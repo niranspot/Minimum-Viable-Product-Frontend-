@@ -17,7 +17,6 @@ export const clearTokens = () => {
   localStorage.removeItem('access_token');
   localStorage.removeItem('logged');
   localStorage.removeItem('remember_email');
-  csrfToken = null;
 };
 
 // ── Axios instance ─────────────────────────────────────
