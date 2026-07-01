@@ -12,6 +12,7 @@ import RoleGate from "./RoleGate";
 // Public Landing Pages
 const LandingPage       = lazy(() => import('../pages/Landing/LandingPage'));
 const TenantSignupPage  = lazy(() => import('../pages/Landing/TenantSignupPage'));
+const MasterLoginPage = lazy(() => import('../pages/Landing/MasterLoginPage'));
 
 // Tenant Auth Pages
 const LoginPage         = lazy(() => import("../pages/Auth/LoginPage"));
@@ -49,6 +50,7 @@ const AppRouter = () => {
           <Routes>
             <Route path="/"       element={<LandingPage />} />
             <Route path="/signup" element={<TenantSignupPage />} />
+            <Route path="/login"   element={<MasterLoginPage />} />
             <Route path="*"       element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
@@ -85,7 +87,7 @@ const AppRouter = () => {
   <Route path="patients" element={<RoleGate roles={['doctor','nurse']}><PatientsPage /></RoleGate>} />
   <Route path="appointments" element={<RoleGate roles={['doctor','nurse','receptionist','patient']}><AppointmentsPage /></RoleGate>} />
   <Route path="communication" element={<RoleGate roles={['admin','doctor','nurse','patient']}><CommunicationPage /></RoleGate>} />
-  <Route path="billing" element={<RoleGate roles={['admin','pharmacist','patient']}><BillingPage /></RoleGate>} />
+  <Route path="billing" element={<RoleGate roles={['admin','pharmacist','patient','doctor']}><BillingPage /></RoleGate>} />
   <Route path="prescriptions" element={<RoleGate roles={['admin','doctor','pharmacist','patient']}><PrescriptionsPage /></RoleGate>} />
   <Route path="calendar" element={<RoleGate roles={['admin','doctor','receptionist']}><CalendarPage /></RoleGate>} />
 </Route>
