@@ -1,17 +1,27 @@
 const getBase = () => {
-  const host = window.location.hostname;
+  const host = window.location.hostname; // e.g., 'tenant1.lvh.me' or 'lvh.me'
   const parts = host.split('.');
   const ignored = ['www', 'api', 'medicloud'];
+  
+  // 1. Determine if a specific tenant is currently in the URL
   const hasTenant = parts.length > 1 && !ignored.includes(parts[0]);
 
+  // 2. Fetch environmental configuration defaults
+  const protocol = process.env.REACT_APP_API_PROTOCOL || 'http://';
+  const defaultBase = process.env.REACT_APP_API_DEFAULT_BASE || 'lvh.me';
+  const apiPath = process.env.REACT_APP_API_PATH || '';
+
+  // 3. Assemble the base API URL dynamically
   if (hasTenant) {
-    return `http://${host}/012-Minimum-Viable-Product/public`;
+    return `${protocol}${host}${apiPath}`;
   }
-  return `http://lvh.me/012-Minimum-Viable-Product/public`;
+  return `${protocol}${defaultBase}${apiPath}`;
 };
 
+// Export the dynamically generated base URL
 export const API_BASE = getBase();
 
+// Your exact endpoint dictionary remains beautifully untouched!
 export const ENDPOINTS = {
   LOGIN:           '/login',
   LOGOUT:          '/logout',
@@ -19,38 +29,45 @@ export const ENDPOINTS = {
   REFRESH_TOKEN:   '/refresh-token',
   CHANGE_PASSWORD: '/change-password',
 
-  // Patients (Mithra)
+  // Patients
   PATIENTS:        '/patients',
   PATIENT_BY_ID:   (id) => `/patients/${id}`,
 
-  // Appointments (Mithra)
+  // Appointments
   APPOINTMENTS:        '/appointments',
   APPOINTMENT_BY_ID:   (id) => `/appointments/${id}`,
 
-  // Calendar (Mithra)
+  // Calendar
   CALENDAR:        '/calendar',
 
-  // Dashboard (Mithra)
+  // Dashboard
   DASHBOARD_SUMMARY:       '/dashboard/summary',
   DASHBOARD_APPOINTMENTS:  '/dashboard/appointments',
   DASHBOARD_PRESCRIPTIONS: '/dashboard/prescriptions',
 
   // Billing
-  BILLING:         '/billing',              // POST (create), GET (list)
-  BILLING_BY_ID:   (id) => `/billing/${id}`, // PUT (update payment status)
+  BILLING:         '/billing',              
+  BILLING_BY_ID:   (id) => `/billing/${id}`, 
 
-  // Communication (appointment notes / messages)
-  MESSAGES:                '/messages',                                  // POST (create)
-  MESSAGES_BY_APPOINTMENT: (appointmentId) => `/messages/${appointmentId}`, // GET (list)
+  // Communication
+  MESSAGES:                '/messages',                                   
+  MESSAGES_BY_APPOINTMENT: (appointmentId) => `/messages/${appointmentId}`, 
 
   // Prescriptions
-  PRESCRIPTIONS:            '/prescriptions',                       // POST (create), GET (list)
-  PRESCRIPTION_BY_ID:       (id) => `/prescriptions/${id}`,         // GET, PUT, DELETE
-  PRESCRIPTION_STATUS:      (id) => `/prescriptions/${id}/status`, // PATCH (status update)
-  PATIENT_PRESCRIPTIONS:    (patientId) => `/patients/${patientId}/prescriptions`,         // GET
-  APPOINTMENT_PRESCRIPTION: (appointmentId) => `/appointments/${appointmentId}/prescriptions`, // GET
+  PRESCRIPTIONS:            '/prescriptions',                                      
+  PRESCRIPTION_BY_ID:       (id) => `/prescriptions/${id}`,         
+  PRESCRIPTION_STATUS:      (id) => `/prescriptions/${id}/status`, 
+  PATIENT_PRESCRIPTIONS:    (patientId) => `/patients/${patientId}/prescriptions`,         
+  APPOINTMENT_PRESCRIPTION: (appointmentId) => `/appointments/${appointmentId}/prescriptions`, 
 
   // Staff
-  STAFF:         '/staff',               // POST (create), GET (list)
-  STAFF_BY_ID:   (id) => `/staff/${id}`, // GET, PUT (update), DELETE
+  STAFF:         '/staff',               
+  STAFF_BY_ID:   (id) => `/staff/${id}`, 
+
+  //Endpoints
+  TENANT_CONFIG:   (subdomain) => `/tenant/config?tenant=${subdomain}`,
+
+  //Users
+  USERS:           '/users',
+  USER_STATUS:     (id) => `/users/${id}/status`,
 };
