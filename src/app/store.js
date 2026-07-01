@@ -11,6 +11,7 @@ import chatReducer from '../modules/chat/chatSlice';
 import billingReducer from '../modules/billing/billingSlice';
 import prescriptionsReducer from '../modules/prescriptions/prescriptionSlice';
 import staffReducer from '../modules/staff/staffSlice';
+import userReducer from '../modules/users/userSlice'
 
 import rootSaga from './rootSaga';
 
@@ -28,6 +29,8 @@ const store = configureStore({
     billing: billingReducer,
     prescriptions: prescriptionsReducer,
     staff: staffReducer,
+    users:userReducer
+    
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -14,9 +14,7 @@ const DashboardLayout = ({ children }) => {
   const theme                   = useTheme();
   const isMobile                = useMediaQuery(theme.breakpoints.down('md'));
 
-  useEffect(() => {
-      fetchCsrf();
-  }, []);
+
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>

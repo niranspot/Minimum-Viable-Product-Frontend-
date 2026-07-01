@@ -42,12 +42,25 @@ const tenantSlice = createSlice({
     clearTenant: (state) => {
       Object.assign(state, initialState);
     },
+   //theme
+    updateThemeRequest: (state) => {
+      state.loading = true;
+    },
+    updateThemeSuccess: (state, action) => {
+      state.loading = false;
+      state.theme_settings = action.payload.theme_settings;
+    },
+    updateThemeFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
   },
 });
 
 export const {
   fetchTenantRequest, fetchTenantSuccess,
   fetchTenantFailure, setTenant, clearTenant,
+   updateThemeRequest, updateThemeSuccess, updateThemeFailure
 } = tenantSlice.actions;
 
 export default tenantSlice.reducer;

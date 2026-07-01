@@ -7,6 +7,7 @@ import ReceiptIcon from '@mui/icons-material/Receipt';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MedicationIcon from '@mui/icons-material/Medication';
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export const menuItems = [
   {
@@ -22,6 +23,20 @@ export const menuItems = [
     icon: <PeopleIcon />,
     path: '/dashboard/staff',
     roles: ['admin', 'doctor', 'nurse'],
+  },
+    {
+    key: 'useractivation',
+    label: 'Users',
+    icon: <PeopleIcon />,
+    path: '/dashboard/UserStatus',
+    roles: ['admin'],
+  },
+    {
+    key: 'tenantsetting',
+    label: 'tenantsetting',
+    icon: <SettingsIcon />,
+    path: '/dashboard/tenantsetting',
+    roles: ['admin'],
   },
   {
     key: 'patients',
@@ -65,11 +80,5 @@ export const menuItems = [
     path: '/dashboard/calendar',
     roles: ['admin', 'doctor', 'receptionist'],
   },
-  {
-    key: 'notifications',
-    label: 'Notifications',
-    icon: <NotificationsIcon />,
-    path: '/dashboard/notifications',
-    roles: ['admin', 'doctor', 'nurse', 'receptionist', 'pharmacist'],
-  },
+
 ];

@@ -32,7 +32,10 @@ function* handleLogin(action) {
 
   let errorMsg = 'Login failed. Please try again.';
 
-  if (status === 401 || message?.toLowerCase().includes('invalid')) {
+
+  if (status === 403 && message?.toLowerCase().includes('pending')) {
+    errorMsg = 'Your account is pending admin approval.';
+  } else if (status === 401 || message?.toLowerCase().includes('invalid')) {
     errorMsg = 'Invalid credentials';
   } else if (message) {
     errorMsg = message;
