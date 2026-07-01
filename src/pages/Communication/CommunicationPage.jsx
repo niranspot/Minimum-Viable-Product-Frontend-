@@ -79,10 +79,13 @@ const SidePanel = styled.div`
 `;
 
 const SideCard = styled.div`
-  background: ${({ theme }) => theme.surface};
-  border: 1px solid ${({ theme }) => theme.divider};
-  border-radius: 18px;
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.08);
 `;
 
 const ThreadPanel = styled.div`
@@ -90,19 +93,22 @@ const ThreadPanel = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  background: ${({ theme }) => theme.surface};
-  border: 1px solid ${({ theme }) => theme.divider};
-  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 20px;
   overflow: hidden;
+  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.08);
 `;
 
 const ThreadHeader = styled.div`
-  padding: 14px 20px;
-  border-bottom: 1px solid ${({ theme }) => theme.divider};
+  padding: 18px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: ${({ theme }) => theme.bg};
+  background: rgba(255, 255, 255, 0.5);
   flex-shrink: 0;
 `;
 
@@ -114,18 +120,21 @@ const NotesScroll = styled.div`
   flex-direction: column;
   gap: 14px;
 
-  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar { width: 6px; }
   &::-webkit-scrollbar-track { background: transparent; }
   &::-webkit-scrollbar-thumb {
-    background: ${({ theme }) => theme.divider};
+    background: rgba(102, 126, 234, 0.2);
     border-radius: 10px;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(102, 126, 234, 0.4);
   }
 `;
 
 const Composer = styled.div`
-  padding: 14px 20px;
-  border-top: 1px solid ${({ theme }) => theme.divider};
-  background: ${({ theme }) => theme.bg};
+  padding: 16px 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: rgba(249, 250, 251, 0.8);
   flex-shrink: 0;
 `;
 
@@ -134,9 +143,10 @@ const BubbleRow = styled.div`
   flex-direction: ${({ $self }) => ($self ? "row-reverse" : "row")};
   align-items: flex-end;
   gap: 10px;
-  animation: ${({ $self }) => ($self
-    ? css`${slideInRight} 0.25s ease both`
-    : css`${slideInLeft} 0.25s ease both`)};
+  ${({ $self }) =>
+    $self
+      ? css`animation: ${slideInRight} 0.25s ease both;`
+      : css`animation: ${slideInLeft} 0.25s ease both;`}
   animation-delay: ${({ delay }) => delay || "0s"};
 `;
 
@@ -169,7 +179,7 @@ const Bubble = styled.div`
 
 const BubbleMeta = styled.div`
   font-size: 11px;
-  color: ${({ theme }) => theme.textMuted};
+  color: #9ca3af;
   margin-bottom: 5px;
   padding: 0 4px;
   display: flex;
@@ -199,7 +209,7 @@ const EmptyThread = styled.div`
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: ${({ theme }) => theme.textMuted};
+  color: #9ca3af;
   padding: 40px;
   text-align: center;
 `;
@@ -222,6 +232,10 @@ const PulseDot = styled.div`
   border-radius: 50%;
   background: #10b981;
   animation: ${pulse} 2s ease infinite;
+`;
+
+const AnimatedRefresh = styled(RefreshIcon)`
+  animation: ${({ $loading }) => ($loading === "true" ? css`${spin} 1s linear infinite` : "none")};
 `;
 
 const AccessDeniedWrapper = styled.div`
@@ -433,12 +447,23 @@ const CommunicationPage = () => {
     <PageWrapper>
       {/* ── Header ── */}
       <PageTop>
-        <Typography variant="h2" sx={{ mb: 0.5 }}>
-          Clinical Notes
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "clamp(22px, 4vw, 32px)",
+            fontWeight: 900,
+            background: "linear-gradient(135deg, #2b5876 0%, #4e4376 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            lineHeight: 1.2,
+          }}
+        >
+          💬 Clinical Notes
+        </h1>
+        <p style={{ margin: "6px 0 0", color: "#9ca3af", fontSize: "14px" }}>
           Appointment-based coordination notes for doctors and nurses
-        </Typography>
+        </p>
       </PageTop>
 
       <Layout>
@@ -588,9 +613,9 @@ const CommunicationPage = () => {
                     onClick={() => openAppointment(activeAppointmentId)}
                     disabled={loading}
                   >
-                    <RefreshIcon
+                    <AnimatedRefresh
                       fontSize="small"
-                      sx={{ animation: loading ? `${spin} 1s linear infinite` : "none" }}
+                      $loading={loading ? "true" : "false"}
                     />
                   </IconButton>
                 </Tooltip>
