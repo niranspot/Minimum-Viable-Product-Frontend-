@@ -14,6 +14,7 @@ import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import { useSelector } from "react-redux";
 import useChat from "../../modules/chat/hooks/useChat";
 import { useThemeMode } from "../../context/ThemeContext";
+import HeroBanner from "../../components/common/HeroBanner";
 
 // ─── Theme Tokens ──────────────────────────────────────────────────────────────
 const getTokens = (mode) => ({
@@ -131,18 +132,18 @@ const CommunicationPage = () => {
 
       <div style={{ animation: "slideUp 0.4s ease", display: "flex", flexDirection: "column", height: "calc(100vh - 120px)", minHeight: "520px" }}>
 
-        {/* ── Header ──────────────────────────────────────────────── */}
-        <div style={{ marginBottom: "20px" }}>
-          <h1 style={{ margin: 0, fontSize: "clamp(22px,4vw,32px)", fontWeight: 900,
-            background: "linear-gradient(135deg, #7C3AED 0%, #0891B2 100%)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-            💬 Medical Notes
-          </h1>
-          <p style={{ margin: "6px 0 0", color: t.textSec, fontSize: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
-            Coordination notes per appointment &middot; Role:
-            <strong style={{ color: t.purple, textTransform: "uppercase" }}>{role}</strong>
-          </p>
-        </div>
+        {/* ── Hero Banner ──────────────────────────────────────── */}
+        <HeroBanner
+          title={role === "doctor" ? "Medical Notes — Doctor View" : "Medical Notes — Nurse View"}
+          subtitle="Appointment-based clinical notes · Doctors & nurses only · Role-based visibility"
+          icon="💬"
+          gradient="linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #4F46E5 100%)"
+          pills={[
+            { icon: "🔴", label: "Live Data" },
+            { icon: "🏥", label: "Appointment-based" },
+            { icon: "🔍", label: "Role-scoped View" },
+          ]}
+        />
 
         {/* ── Two-pane layout ─────────────────────────────────────── */}
         <div style={{ display: "flex", flex: 1, gap: "20px", minHeight: 0, flexWrap: "wrap" }}>

@@ -28,6 +28,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import VerifiedIcon from "@mui/icons-material/Verified";
 import usePrescriptions from "../../modules/prescriptions/hooks/usePrescriptions";
 import { useThemeMode } from "../../context/ThemeContext";
+import HeroBanner from "../../components/common/HeroBanner";
 
 // ─── Theme Tokens ─────────────────────────────────────────────────────────────
 const getTokens = (mode) => ({
@@ -384,25 +385,21 @@ const PrescriptionsPage = () => {
       `}</style>
 
       <div style={{ animation: "fadeSlideUp 0.4s ease" }}>
-        {/* Header */}
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "20px" }}>
-          <div>
-            <h1 style={{
-              margin: 0,
-              fontSize: "clamp(22px, 4vw, 32px)",
-              fontWeight: 900,
-              background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}>
-              💊 Prescriptions
-            </h1>
-            <p style={{ margin: "6px 0 0", color: t.textSecondary, fontSize: "14px" }}>
-              Created by doctors · Verified &amp; dispensed by pharmacy
-            </p>
-          </div>
+        {/* Hero Banner */}
+        <HeroBanner
+          title={role === "doctor" ? "Prescriptions — Doctor View" : role === "pharmacist" ? "Prescriptions — Pharmacist View" : "Your Prescriptions"}
+          subtitle="Created by doctors · Verified & dispensed by pharmacy · Scoped to your tenant"
+          icon="💊"
+          gradient="linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #4F46E5 100%)"
+          pills={[
+            { icon: "🔴", label: "Live Data" },
+            { icon: "🏥", label: "Tenant-wide" },
+            { icon: "📋", label: "Role-scoped View" },
+          ]}
+        />
 
+        {/* Action buttons row */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "20px", alignItems: "center" }}>
           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <Tooltip title="Refresh">
               <span>

@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import useBilling from "../../modules/billing/hooks/useBilling";
 import { getSubdomain } from "../../utils/tenantUtils";
 import { useThemeMode } from "../../context/ThemeContext";
+import HeroBanner from "../../components/common/HeroBanner";
 
 // ─── Theme Tokens ──────────────────────────────────────────────────────────────
 const getTokens = (mode) => ({
@@ -160,38 +161,36 @@ const BillingPage = () => {
       `}</style>
 
       <div style={{ animation: "slideUp 0.4s ease" }}>
-        {/* ── Header ───────────────────────────────────────────────── */}
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 24 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: "clamp(22px,4vw,32px)", fontWeight: 900, background: "linear-gradient(135deg, #16A34A 0%, #0891B2 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-              💳 Finance &amp; Invoices
-            </h1>
-            <p style={{ margin: "6px 0 0", color: t.textSec, fontSize: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
-              Tenant-isolated billing data for:
-              <strong style={{ color: "#0891B2", textTransform: "uppercase" }}>{activeSubdomain}</strong>
-            </p>
-          </div>
+        {/* ── Hero Banner ────────────────────────────────────────── */}
+        <HeroBanner
+          title="Finance & Invoices"
+          subtitle={`Tenant-isolated billing records for ${activeSubdomain.toUpperCase()} · Admins can mark payments · Doctors generate invoices`}
+          icon="💳"
+          gradient="linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #4F46E5 100%)"
+          pills={[
+            { icon: "🔴", label: "Live Data" },
+            { icon: "🔒", label: "Tenant-isolated" },
+            { icon: "📊", label: "Payment Tracking" },
+          ]}
+        />
 
-          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <span style={{ display: "flex", alignItems: "center", gap: "6px", background: t.greenLight, color: t.green, padding: "6px 12px", borderRadius: "12px", fontSize: "12px", fontWeight: 700 }}>
-              🔒 Tenant Isolated
+        {/* ── Action buttons ─────────────────────────────────────── */}
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, alignItems: "center", marginBottom: 16 }}>
+          <Tooltip title="Refresh">
+            <span>
+              <IconButton onClick={fetchBilling} disabled={loading} sx={{ color: t.textSec, border: `1px solid ${t.border}`, borderRadius: "12px" }}>
+                <RefreshIcon />
+              </IconButton>
             </span>
-            <Tooltip title="Refresh">
-              <span>
-                <IconButton onClick={fetchBilling} disabled={loading} sx={{ color: t.textSec, border: `1px solid ${t.border}`, borderRadius: "12px" }}>
-                  <RefreshIcon />
-                </IconButton>
-              </span>
-            </Tooltip>
-            {canCreate && (
-              <button onClick={() => { clearError(); setDialogOpen(true); }}
-                style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "linear-gradient(135deg, #16A34A 0%, #0891B2 100%)", color: "#fff", border: "none", borderRadius: "14px", fontWeight: 700, fontSize: "14px", cursor: "pointer", boxShadow: "0 4px 20px rgba(22,163,74,0.35)", transition: "all 0.2s" }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(22,163,74,0.45)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(22,163,74,0.35)"; }}>
-                <AddIcon style={{ fontSize: "18px" }} /> Generate Invoice
-              </button>
-            )}
-          </div>
+          </Tooltip>
+          {canCreate && (
+            <button onClick={() => { clearError(); setDialogOpen(true); }}
+              style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 20px", background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)", color: "#fff", border: "none", borderRadius: "14px", fontWeight: 700, fontSize: "14px", cursor: "pointer", boxShadow: "0 4px 20px rgba(124,58,237,0.4)", transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(124,58,237,0.5)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(124,58,237,0.4)"; }}>
+              <AddIcon style={{ fontSize: "18px" }} /> Generate Invoice
+            </button>
+          )}
         </div>
 
         {error && <Alert severity="error" sx={{ mb: 3, borderRadius: "14px" }}>{error}</Alert>}
