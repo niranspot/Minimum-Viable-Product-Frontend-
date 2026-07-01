@@ -205,7 +205,7 @@ const BillingPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canCreate = ["admin", "doctor"].includes(user?.role);
+  const canCreate = ["doctor", "nurse"].includes(user?.role);
   const canMarkPaid = user?.role === "admin";
 
   const handleCreate = (data) => {

@@ -159,7 +159,7 @@ const BubbleContent = styled.div`
 
 const Bubble = styled.div`
   position: relative;
-  padding: 12px 16px;
+  padding: ${({ $self }) => ($self ? "12px 38px 12px 16px" : "12px 16px")};
   border-radius: ${({ $self }) =>
     $self ? "18px 18px 4px 18px" : "18px 18px 18px 4px"};
   background: ${({ $self }) =>
@@ -712,7 +712,7 @@ const CommunicationPage = () => {
                         <Bubble $self={isSelf ? 1 : 0}>
                           {note.message}
                           {isSelf && (
-                            <Box sx={{ position: "absolute", top: 4, right: 4 }}>
+                            <Box sx={{ position: "absolute", top: 6, right: 6 }}>
                               <BubbleActions
                                 note={note}
                                 onEdit={(n) => setEditingNote(n)}
