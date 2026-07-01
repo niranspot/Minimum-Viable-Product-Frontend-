@@ -1,289 +1,59 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Typography,
-  TextField,
-  Button,
-  IconButton,
-  Avatar,
-  Alert,
-  CircularProgress,
-  Tooltip,
-  Menu,
-  MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Chip,
-  Stack,
-  Divider,
-  Box,
-  InputAdornment,
+  TextField, Button, Alert, CircularProgress, Tooltip, IconButton,
+  Avatar, Dialog, DialogTitle, DialogContent, DialogActions,
+  Menu, MenuItem,
 } from "@mui/material";
 import SendIcon from "@mui/icons-material/Send";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlined";
-import ForumOutlinedIcon from "@mui/icons-material/ForumOutlined";
-import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
-import SearchIcon from "@mui/icons-material/Search";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import MedicalServicesOutlinedIcon from "@mui/icons-material/MedicalServicesOutlined";
-import LocalHospitalOutlinedIcon from "@mui/icons-material/LocalHospitalOutlined";
+import ForumIcon from "@mui/icons-material/Forum";
+import AssignmentIndIcon from "@mui/icons-material/AssignmentInd";
 import { useSelector } from "react-redux";
 import useChat from "../../modules/chat/hooks/useChat";
-import styled, { keyframes, css } from "styled-components";
+import { useThemeMode } from "../../context/ThemeContext";
 
-// ─── Animations ───────────────────────────────────────────────────────────────
-const fadeUp = keyframes`from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}`;
-const slideInLeft = keyframes`from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}`;
-const slideInRight = keyframes`from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}`;
-const pulse = keyframes`0%,100%{opacity:1}50%{opacity:0.4}`;
-const spin = keyframes`from{transform:rotate(0deg)}to{transform:rotate(360deg)}`;
+// ─── Theme Tokens ──────────────────────────────────────────────────────────────
+const getTokens = (mode) => ({
+  isDark:       mode === "dark",
+  bg:           mode === "dark" ? "#0D1117" : "#F4F6FB",
+  surface:      mode === "dark" ? "#161B22" : "#FFFFFF",
+  surfaceAlt:   mode === "dark" ? "#1C2333" : "#F0F4FA",
+  panelBg:      mode === "dark" ? "rgba(22,27,34,0.85)" : "rgba(255,255,255,0.85)",
+  border:       mode === "dark" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)",
+  text:         mode === "dark" ? "#E6EDF3" : "#1A1A2E",
+  textSec:      mode === "dark" ? "#8B949E" : "#718096",
+  // Brand from dashboard screenshots
+  purple:       "#7C3AED",
+  purpleLight:  mode === "dark" ? "rgba(124,58,237,0.2)" : "rgba(124,58,237,0.1)",
+  teal:         "#0891B2",
+  tealLight:    mode === "dark" ? "rgba(8,145,178,0.2)" : "rgba(8,145,178,0.1)",
+  green:        "#16A34A",
+  greenLight:   mode === "dark" ? "rgba(22,163,74,0.2)" : "rgba(22,163,74,0.1)",
+  selfBubble:   "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)",
+  otherBubble:  mode === "dark" ? "#1C2333" : "#FFFFFF",
+  otherText:    mode === "dark" ? "#E6EDF3" : "#1A1A2E",
+  shadow:       mode === "dark" ? "0 8px 32px rgba(0,0,0,0.4)" : "0 8px 24px rgba(0,0,0,0.08)",
+});
 
-// ─── Styled components ────────────────────────────────────────────────────────
-const PageWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 100px);
-  min-height: 520px;
-  animation: ${fadeUp} 0.35s ease;
-`;
-
-const PageTop = styled.div`
-  margin-bottom: 20px;
-  flex-shrink: 0;
-`;
-
-const Layout = styled.div`
-  display: flex;
-  flex: 1;
-  gap: 20px;
-  min-height: 0;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-  }
-`;
-
-const SidePanel = styled.div`
-  flex: 0 0 280px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-
-  @media (max-width: 768px) {
-    flex: none;
-  }
-`;
-
-const SideCard = styled.div`
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(102, 126, 234, 0.15);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.08);
-`;
-
-const ThreadPanel = styled.div`
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(102, 126, 234, 0.15);
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.08);
-`;
-
-const ThreadHeader = styled.div`
-  padding: 18px 24px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.5);
-  flex-shrink: 0;
-`;
-
-const NotesScroll = styled.div`
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-
-  &::-webkit-scrollbar { width: 6px; }
-  &::-webkit-scrollbar-track { background: transparent; }
-  &::-webkit-scrollbar-thumb {
-    background: rgba(102, 126, 234, 0.2);
-    border-radius: 10px;
-  }
-  &::-webkit-scrollbar-thumb:hover {
-    background: rgba(102, 126, 234, 0.4);
-  }
-`;
-
-const Composer = styled.div`
-  padding: 16px 24px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(249, 250, 251, 0.8);
-  flex-shrink: 0;
-`;
-
-const BubbleRow = styled.div`
-  display: flex;
-  flex-direction: ${({ $self }) => ($self ? "row-reverse" : "row")};
-  align-items: flex-end;
-  gap: 10px;
-  ${({ $self }) =>
-    $self
-      ? css`animation: ${slideInRight} 0.25s ease both;`
-      : css`animation: ${slideInLeft} 0.25s ease both;`}
-  animation-delay: ${({ delay }) => delay || "0s"};
-`;
-
-const BubbleContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: ${({ $self }) => ($self ? "flex-end" : "flex-start")};
-  max-width: 72%;
-`;
-
-const Bubble = styled.div`
-  position: relative;
-  padding: ${({ $self }) => ($self ? "12px 38px 12px 16px" : "12px 16px")};
-  border-radius: ${({ $self }) =>
-    $self ? "18px 18px 4px 18px" : "18px 18px 18px 4px"};
-  background: ${({ $self }) =>
-    $self
-      ? "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)"
-      : "rgba(0,0,0,0.04)"};
-  color: ${({ $self }) => ($self ? "#fff" : "inherit")};
-  font-size: 14px;
-  line-height: 1.55;
-  word-break: break-word;
-  border: ${({ $self }) => ($self ? "none" : "1px solid rgba(0,0,0,0.07)")};
-  box-shadow: ${({ $self }) =>
-    $self
-      ? "0 4px 14px rgba(59,130,246,0.25)"
-      : "0 2px 8px rgba(0,0,0,0.05)"};
-`;
-
-const BubbleMeta = styled.div`
-  font-size: 11px;
-  color: #9ca3af;
-  margin-bottom: 5px;
-  padding: 0 4px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-`;
-
-const RoleBadge = styled.span`
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  padding: 1px 7px;
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: 600;
-  background: ${({ role }) =>
-    role === "doctor" ? "#dbeafe" : "#f3e8ff"};
-  color: ${({ role }) =>
-    role === "doctor" ? "#1d4ed8" : "#7c3aed"};
-  text-transform: capitalize;
-`;
-
-const EmptyThread = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: #9ca3af;
-  padding: 40px;
-  text-align: center;
-`;
-
-const ConnectedBadge = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(16, 185, 129, 0.1);
-  color: #059669;
-  font-size: 13px;
-  font-weight: 600;
-`;
-
-const PulseDot = styled.div`
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #10b981;
-  animation: ${pulse} 2s ease infinite;
-`;
-
-const AnimatedRefresh = styled(RefreshIcon)`
-  animation: ${({ $loading }) => ($loading === "true" ? css`${spin} 1s linear infinite` : "none")};
-`;
-
-const AccessDeniedWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  padding: 60px 24px;
-  text-align: center;
-  animation: ${fadeUp} 0.4s ease;
-`;
-
-// ─── Bubble action menu ───────────────────────────────────────────────────────
-const BubbleActions = ({ note, onEdit, onDelete }) => {
+// ─── Note Bubble Actions Menu ──────────────────────────────────────────────────
+const NoteActions = ({ note, onEdit, onDelete, mode }) => {
   const [anchor, setAnchor] = useState(null);
+  const t = getTokens(mode);
   return (
     <>
-      <IconButton
-        size="small"
-        onClick={(e) => { e.stopPropagation(); setAnchor(e.currentTarget); }}
-        sx={{
-          color: "rgba(255,255,255,0.75)",
-          width: 22,
-          height: 22,
-          "&:hover": { color: "#fff", background: "rgba(255,255,255,0.15)" },
-        }}
-      >
-        <MoreVertIcon sx={{ fontSize: 14 }} />
+      <IconButton size="small" onClick={(e) => setAnchor(e.currentTarget)}
+        sx={{ color: "rgba(255,255,255,0.75)", padding: "2px", "&:hover": { color: "#fff", background: "rgba(255,255,255,0.15)" } }}>
+        <MoreVertIcon sx={{ fontSize: 16 }} />
       </IconButton>
-      <Menu
-        anchorEl={anchor}
-        open={Boolean(anchor)}
-        onClose={() => setAnchor(null)}
-        PaperProps={{
-          sx: { borderRadius: "12px", minWidth: 150, boxShadow: "0 8px 24px rgba(0,0,0,0.12)" },
-        }}
-      >
-        <MenuItem
-          onClick={() => { onEdit(note); setAnchor(null); }}
-          sx={{ gap: 1, fontSize: "14px", color: "primary.main", fontWeight: 500 }}
-        >
+      <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}
+        PaperProps={{ sx: { borderRadius: "14px", boxShadow: "0 8px 32px rgba(0,0,0,0.2)", border: `1px solid ${t.border}`, minWidth: 150, bgcolor: t.surface } }}>
+        <MenuItem onClick={() => { onEdit(note); setAnchor(null); }} sx={{ gap: 1.5, color: "#2563EB", fontWeight: 700, fontSize: "13px" }}>
           <EditOutlinedIcon fontSize="small" /> Edit Note
         </MenuItem>
-        <MenuItem
-          onClick={() => { onDelete(note.id); setAnchor(null); }}
-          sx={{ gap: 1, fontSize: "14px", color: "error.main", fontWeight: 500 }}
-        >
+        <MenuItem onClick={() => { onDelete(note); setAnchor(null); }} sx={{ gap: 1.5, color: "#DC2626", fontWeight: 700, fontSize: "13px" }}>
           <DeleteOutlineIcon fontSize="small" /> Delete
         </MenuItem>
       </Menu>
@@ -291,98 +61,29 @@ const BubbleActions = ({ note, onEdit, onDelete }) => {
   );
 };
 
-// ─── Edit dialog ──────────────────────────────────────────────────────────────
-const EditNoteDialog = ({ open, note, onClose, onSave, saving }) => {
-  const [text, setText] = useState("");
-
-  useEffect(() => {
-    if (open && note) setText(note.message || "");
-  }, [open, note]);
-
-  return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm"
-      PaperProps={{ sx: { borderRadius: "18px" } }}
-    >
-      <DialogTitle sx={{ fontWeight: 700, pb: 1 }}>
-        <Stack direction="row" alignItems="center" spacing={1.5}>
-          <Avatar sx={{ bgcolor: "primary.main", width: 34, height: 34 }}>
-            <EditOutlinedIcon fontSize="small" />
-          </Avatar>
-          <Box>
-            <Typography variant="h6" fontWeight={700}>Edit Note</Typography>
-            <Typography variant="caption" color="text.secondary">Modify your clinical note</Typography>
-          </Box>
-        </Stack>
-      </DialogTitle>
-      <Divider />
-      <DialogContent>
-        <TextField
-          multiline
-          rows={5}
-          fullWidth
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Write your clinical or coordination note…"
-          sx={{ mt: 2, "& .MuiOutlinedInput-root": { borderRadius: "12px" } }}
-        />
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onClose} disabled={saving} color="inherit">Cancel</Button>
-        <Button
-          variant="contained"
-          onClick={() => onSave(note.id, text.trim())}
-          disabled={!text.trim() || saving}
-          startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <EditOutlinedIcon />}
-        >
-          {saving ? "Saving…" : "Save Changes"}
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-// ─── Role icon helper ─────────────────────────────────────────────────────────
-const RoleIcon = ({ role }) =>
-  role === "doctor"
-    ? <MedicalServicesOutlinedIcon sx={{ fontSize: 10 }} />
-    : <LocalHospitalOutlinedIcon sx={{ fontSize: 10 }} />;
-
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────────
 const CommunicationPage = () => {
   const { user } = useSelector((state) => state.auth);
-  const {
-    activeAppointmentId,
-    messages,
-    loading,
-    error,
-    sending,
-    sendError,
-    openAppointment,
-    sendMessage,
-    updateMessage,
-    deleteMessage,
-    clearError,
-  } = useChat();
+  const { mode } = useThemeMode();
+  const t = getTokens(mode);
 
-  const [aptInput, setAptInput] = useState("");
+  const { activeAppointmentId, messages, loading, error, sending, sendError, openAppointment, sendMessage, updateMessage, deleteMessage, clearError } = useChat();
+
+  const [appointmentInput, setAppointmentInput] = useState("");
   const [draft, setDraft] = useState("");
   const [editingNote, setEditingNote] = useState(null);
-  const [search, setSearch] = useState("");
   const scrollRef = useRef(null);
 
   const role = user?.role;
-  const canWrite = ["doctor", "nurse"].includes(role);
+  const allowed = ["doctor", "nurse"].includes(role);
 
-  // Auto-scroll to latest note
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages]);
 
-  const handleLoad = (e) => {
+  const handleOpenAppointment = (e) => {
     e.preventDefault();
-    const id = Number(aptInput);
+    const id = Number(appointmentInput);
     if (!id) return;
     clearError();
     openAppointment(id);
@@ -394,428 +95,242 @@ const CommunicationPage = () => {
     setDraft("");
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
+  const handleComposerKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
-  const handleSaveEdit = (id, text) => {
-    updateMessage(id, text);
+  const handleSaveEdit = () => {
+    if (!editingNote || !editingNote.text.trim()) return;
+    updateMessage(editingNote.id, editingNote.text.trim());
     setEditingNote(null);
   };
 
-  // Filter messages by search
-  const filtered = search.trim()
-    ? messages.filter((m) =>
-        m.message?.toLowerCase().includes(search.toLowerCase()) ||
-        m.sender_name?.toLowerCase().includes(search.toLowerCase())
-      )
-    : messages;
-
-  // ── Access denied for non-medical roles ──────────────────────────────────
-  if (!canWrite) {
+  if (!allowed) {
     return (
-      <AccessDeniedWrapper>
-        <Box
-          sx={{
-            width: 72,
-            height: 72,
-            borderRadius: "50%",
-            background: "rgba(239,68,68,0.1)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <LockOutlinedIcon sx={{ fontSize: 36, color: "error.main" }} />
-        </Box>
-        <Typography variant="h5" fontWeight={800} color="text.primary">
-          Access Restricted
-        </Typography>
-        <Typography variant="body2" color="text.secondary" maxWidth={360}>
-          Clinical notes and coordination messages are strictly accessible to{" "}
-          <strong>doctors</strong> and <strong>nurses</strong> only. Your current
-          role (<Chip label={role} size="small" color="default" sx={{ fontWeight: 600 }} />) does not have permission to view this module.
-        </Typography>
-      </AccessDeniedWrapper>
+      <div style={{ padding: "60px", textAlign: "center", borderRadius: "20px", background: t.bg }}>
+        <div style={{ fontSize: "48px", marginBottom: "16px" }}>🚫</div>
+        <div style={{ fontSize: "20px", fontWeight: 800, color: t.text }}>Access Denied</div>
+        <div style={{ color: t.textSec, marginTop: "8px", fontSize: "14px" }}>
+          Communication notes are strictly for doctors and nurses.
+        </div>
+      </div>
     );
   }
 
   return (
-    <PageWrapper>
-      {/* ── Header ── */}
-      <PageTop>
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "clamp(22px, 4vw, 32px)",
-            fontWeight: 900,
-            background: "linear-gradient(135deg, #2b5876 0%, #4e4376 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            lineHeight: 1.2,
-          }}
-        >
-          💬 Clinical Notes
-        </h1>
-        <p style={{ margin: "6px 0 0", color: "#9ca3af", fontSize: "14px" }}>
-          Appointment-based coordination notes for doctors and nurses
-        </p>
-      </PageTop>
+    <>
+      <style>{`
+        @keyframes slideUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes slideIn { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        .msg-scroll::-webkit-scrollbar { width: 6px; }
+        .msg-scroll::-webkit-scrollbar-track { background: transparent; }
+        .msg-scroll::-webkit-scrollbar-thumb { background: ${t.isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}; border-radius: 4px; }
+        .msg-scroll::-webkit-scrollbar-thumb:hover { background: ${t.isDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.2)"}; }
+      `}</style>
 
-      <Layout>
-        {/* ── Side Panel ── */}
-        <SidePanel>
-          {/* Load appointment card */}
-          <SideCard>
-            <Stack spacing={1.5}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Avatar sx={{ bgcolor: "primary.main", width: 32, height: 32 }}>
-                  <AssignmentOutlinedIcon sx={{ fontSize: 16 }} />
-                </Avatar>
-                <Box>
-                  <Typography variant="body1" fontWeight={700} lineHeight={1.2}>
-                    Load Appointment
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Enter an appointment ID
-                  </Typography>
-                </Box>
-              </Stack>
+      <div style={{ animation: "slideUp 0.4s ease", display: "flex", flexDirection: "column", height: "calc(100vh - 120px)", minHeight: "520px" }}>
 
-              <form onSubmit={handleLoad}>
-                <Stack spacing={1.5}>
-                  <TextField
-                    label="Appointment ID"
-                    type="number"
-                    fullWidth
-                    size="small"
-                    required
-                    value={aptInput}
-                    onChange={(e) => setAptInput(e.target.value)}
-                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
-                  />
-                  <Button
-                    type="submit"
-                    variant="contained"
-                    disabled={!aptInput}
-                    fullWidth
-                    sx={{ borderRadius: "10px", fontWeight: 600 }}
-                  >
-                    Open Thread
-                  </Button>
-                </Stack>
-              </form>
+        {/* ── Header ──────────────────────────────────────────────── */}
+        <div style={{ marginBottom: "20px" }}>
+          <h1 style={{ margin: 0, fontSize: "clamp(22px,4vw,32px)", fontWeight: 900,
+            background: "linear-gradient(135deg, #7C3AED 0%, #0891B2 100%)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+            💬 Medical Notes
+          </h1>
+          <p style={{ margin: "6px 0 0", color: t.textSec, fontSize: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+            Coordination notes per appointment &middot; Role:
+            <strong style={{ color: t.purple, textTransform: "uppercase" }}>{role}</strong>
+          </p>
+        </div>
 
-              {activeAppointmentId && (
-                <ConnectedBadge>
-                  <PulseDot />
-                  Apt #{activeAppointmentId} active
-                </ConnectedBadge>
-              )}
-            </Stack>
-          </SideCard>
+        {/* ── Two-pane layout ─────────────────────────────────────── */}
+        <div style={{ display: "flex", flex: 1, gap: "20px", minHeight: 0, flexWrap: "wrap" }}>
 
-          {/* Stats card */}
-          {activeAppointmentId && (
-            <SideCard>
-              <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
-                Thread Stats
-              </Typography>
-              <Stack spacing={1} sx={{ mt: 1.5 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2" color="text.secondary">Total notes</Typography>
-                  <Typography variant="body2" fontWeight={700}>{messages.length}</Typography>
-                </Stack>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2" color="text.secondary">Your notes</Typography>
-                  <Typography variant="body2" fontWeight={700}>
-                    {messages.filter((m) => m.sender_id === user?.user_id).length}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2" color="text.secondary">Contributors</Typography>
-                  <Typography variant="body2" fontWeight={700}>
-                    {new Set(messages.map((m) => m.sender_id)).size}
-                  </Typography>
-                </Stack>
-              </Stack>
-            </SideCard>
-          )}
+          {/* ── Left: Selector Panel ────────────────────────────── */}
+          <div style={{
+            flex: "0 0 280px",
+            background: t.panelBg,
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: `1px solid ${t.border}`,
+            borderRadius: "20px",
+            padding: "24px",
+            boxShadow: t.shadow,
+            display: "flex", flexDirection: "column", gap: "16px",
+            height: "max-content",
+          }}>
+            {/* Panel header */}
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", color: t.text }}>
+              <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, #7C3AED 0%, #0891B2 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff" }}>
+                <AssignmentIndIcon style={{ fontSize: "18px" }} />
+              </div>
+              <div style={{ fontWeight: 800, fontSize: "16px" }}>Load Appointment</div>
+            </div>
+            <p style={{ margin: 0, fontSize: "13px", color: t.textSec }}>Notes are tied to an appointment ID — enter it below to load the thread.</p>
 
-          {/* Role badge */}
-          <SideCard>
-            <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
-              Your Access
-            </Typography>
-            <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1.5 }}>
-              <Chip
-                icon={<MedicalServicesOutlinedIcon />}
-                label={role?.charAt(0).toUpperCase() + role?.slice(1)}
-                color={role === "doctor" ? "primary" : "secondary"}
-                size="small"
-                sx={{ fontWeight: 600 }}
-              />
-              <Typography variant="caption" color="text.secondary">
-                Full read & write
-              </Typography>
-            </Stack>
-          </SideCard>
-        </SidePanel>
+            <form onSubmit={handleOpenAppointment} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <TextField label="Appointment ID" type="number" fullWidth required size="small" value={appointmentInput}
+                onChange={(e) => setAppointmentInput(e.target.value)}
+                sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px", bgcolor: t.isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)" } }} />
+              <button type="submit" disabled={!appointmentInput}
+                style={{
+                  padding: "10px", borderRadius: "12px", border: "none", fontWeight: 700,
+                  fontSize: "14px", cursor: appointmentInput ? "pointer" : "not-allowed",
+                  background: appointmentInput ? "linear-gradient(135deg, #7C3AED 0%, #0891B2 100%)" : t.surfaceAlt,
+                  color: appointmentInput ? "#fff" : t.textSec,
+                  boxShadow: appointmentInput ? "0 4px 16px rgba(124,58,237,0.35)" : "none",
+                  transition: "all 0.2s",
+                }}>
+                Access Appointment Notes
+              </button>
+            </form>
 
-        {/* ── Thread Panel ── */}
-        <ThreadPanel>
-          {/* Header */}
-          <ThreadHeader>
-            <Stack direction="row" alignItems="center" spacing={1.5}>
-              <ForumOutlinedIcon sx={{ color: "primary.main", fontSize: 20 }} />
-              <Box>
-                <Typography variant="body1" fontWeight={700}>
-                  {activeAppointmentId
-                    ? `Appointment #${activeAppointmentId}`
-                    : "No Thread Active"}
-                </Typography>
-                {activeAppointmentId && (
-                  <Typography variant="caption" color="text.secondary">
-                    {messages.length} note{messages.length !== 1 ? "s" : ""}
-                  </Typography>
-                )}
-              </Box>
-            </Stack>
+            {activeAppointmentId && (
+              <div style={{ padding: "10px 14px", background: t.greenLight, borderRadius: "12px", color: t.green, fontSize: "13px", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: t.green }} />
+                Connected: Apt #{activeAppointmentId}
+              </div>
+            )}
+          </div>
 
-            <Stack direction="row" alignItems="center" spacing={1}>
-              {activeAppointmentId && messages.length > 0 && (
-                <TextField
-                  placeholder="Search notes…"
-                  size="small"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <SearchIcon sx={{ fontSize: 16 }} />
-                      </InputAdornment>
-                    ),
-                  }}
-                  sx={{
-                    width: 180,
-                    "& .MuiOutlinedInput-root": { borderRadius: "20px", fontSize: "13px" },
-                  }}
-                />
-              )}
+          {/* ── Right: Thread Panel ─────────────────────────────── */}
+          <div style={{
+            flex: "1 1 360px",
+            background: t.panelBg,
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: `1px solid ${t.border}`,
+            borderRadius: "20px",
+            boxShadow: t.shadow,
+            display: "flex", flexDirection: "column",
+            overflow: "hidden",
+          }}>
+            {/* Panel header bar */}
+            <div style={{ padding: "14px 22px", borderBottom: `1px solid ${t.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: t.isDark ? "rgba(255,255,255,0.02)" : "rgba(124,58,237,0.04)" }}>
+              <div style={{ fontWeight: 800, fontSize: "15px", color: t.text }}>
+                {activeAppointmentId ? `Appointment Thread #${activeAppointmentId}` : "Select an Appointment"}
+              </div>
               {activeAppointmentId && (
                 <Tooltip title="Refresh thread">
-                  <IconButton
-                    size="small"
-                    onClick={() => openAppointment(activeAppointmentId)}
-                    disabled={loading}
-                  >
-                    <AnimatedRefresh
-                      fontSize="small"
-                      $loading={loading ? "true" : "false"}
-                    />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Stack>
-          </ThreadHeader>
-
-          {/* Error banners */}
-          {(error || sendError) && (
-            <Box sx={{ px: 2.5, pt: 1.5 }}>
-              {error && (
-                <Alert severity="error" onClose={clearError} sx={{ mb: 1, borderRadius: "10px" }}>
-                  {error}
-                </Alert>
-              )}
-              {sendError && (
-                <Alert severity="error" sx={{ borderRadius: "10px" }}>
-                  {sendError}
-                </Alert>
-              )}
-            </Box>
-          )}
-
-          {/* Thread body */}
-          {!activeAppointmentId ? (
-            <EmptyThread>
-              <ForumOutlinedIcon sx={{ fontSize: 56, opacity: 0.2 }} />
-              <Typography variant="h6" fontWeight={700}>No Thread Loaded</Typography>
-              <Typography variant="body2">
-                Enter an appointment ID in the panel to start viewing and adding clinical notes.
-              </Typography>
-            </EmptyThread>
-          ) : loading ? (
-            <Box sx={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
-              <CircularProgress size={32} />
-            </Box>
-          ) : (
-            <NotesScroll ref={scrollRef}>
-              {filtered.length === 0 ? (
-                <Box
-                  sx={{
-                    textAlign: "center",
-                    py: 5,
-                    color: "text.secondary",
-                    border: "1px dashed",
-                    borderColor: "divider",
-                    borderRadius: "14px",
-                  }}
-                >
-                  <ForumOutlinedIcon sx={{ fontSize: 36, opacity: 0.3, mb: 1 }} />
-                  <Typography variant="body2">
-                    {search ? "No notes match your search." : "No clinical notes recorded yet. Be the first to add one."}
-                  </Typography>
-                </Box>
-              ) : (
-                filtered.map((note, i) => {
-                  const isSelf = note.sender_id === user?.user_id;
-                  return (
-                    <BubbleRow key={note.id} $self={isSelf ? 1 : 0} delay={`${i * 0.03}s`}>
-                      {/* Avatar */}
-                      <Avatar
-                        sx={{
-                          width: 34,
-                          height: 34,
-                          fontSize: "13px",
-                          fontWeight: 700,
-                          bgcolor: isSelf ? "#1d4ed8" : note.sender_role === "doctor" ? "#7c3aed" : "#db2777",
-                          flexShrink: 0,
-                        }}
-                      >
-                        {(note.sender_name || "?").charAt(0).toUpperCase()}
-                      </Avatar>
-
-                      {/* Content */}
-                      <BubbleContent $self={isSelf ? 1 : 0}>
-                        <BubbleMeta>
-                          <strong style={{ color: "inherit" }}>
-                            {isSelf ? "You" : note.sender_name}
-                          </strong>
-                          <RoleBadge role={note.sender_role}>
-                            <RoleIcon role={note.sender_role} />
-                            {note.sender_role}
-                          </RoleBadge>
-                          <span>
-                            {note.created_at
-                              ? new Date(note.created_at).toLocaleTimeString([], {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                })
-                              : ""}
-                          </span>
-                        </BubbleMeta>
-
-                        <Bubble $self={isSelf ? 1 : 0}>
-                          {note.message}
-                          {isSelf && (
-                            <Box sx={{ position: "absolute", top: 6, right: 6 }}>
-                              <BubbleActions
-                                note={note}
-                                onEdit={(n) => setEditingNote(n)}
-                                onDelete={deleteMessage}
-                              />
-                            </Box>
-                          )}
-                        </Bubble>
-
-                        <Typography
-                          variant="caption"
-                          sx={{ opacity: 0.5, mt: 0.5, px: 0.5 }}
-                        >
-                          {note.created_at
-                            ? new Date(note.created_at).toLocaleDateString("en-IN", {
-                                day: "numeric",
-                                month: "short",
-                              })
-                            : ""}
-                        </Typography>
-                      </BubbleContent>
-                    </BubbleRow>
-                  );
-                })
-              )}
-            </NotesScroll>
-          )}
-
-          {/* Composer */}
-          {activeAppointmentId && (
-            <Composer>
-              <Stack direction="row" spacing={1.5} alignItems="flex-end">
-                <Avatar
-                  sx={{
-                    width: 34,
-                    height: 34,
-                    fontSize: "13px",
-                    fontWeight: 700,
-                    bgcolor: "primary.main",
-                    flexShrink: 0,
-                  }}
-                >
-                  {(user?.name || "Y").charAt(0).toUpperCase()}
-                </Avatar>
-                <TextField
-                  placeholder="Write a clinical or coordination note… (Enter to send)"
-                  fullWidth
-                  multiline
-                  maxRows={4}
-                  size="small"
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={sending}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "14px",
-                      fontSize: "14px",
-                    },
-                  }}
-                />
-                <Tooltip title="Send note (Enter)">
                   <span>
-                    <IconButton
-                      onClick={handleSend}
-                      disabled={!draft.trim() || sending}
-                      sx={{
-                        bgcolor: "primary.main",
-                        color: "#fff",
-                        width: 40,
-                        height: 40,
-                        borderRadius: "12px",
-                        flexShrink: 0,
-                        "&:hover": { bgcolor: "primary.dark" },
-                        "&:disabled": { bgcolor: "action.disabledBackground" },
-                      }}
-                    >
-                      {sending ? (
-                        <CircularProgress size={18} color="inherit" />
-                      ) : (
-                        <SendIcon sx={{ fontSize: 18 }} />
-                      )}
+                    <IconButton size="small" onClick={() => openAppointment(activeAppointmentId)}
+                      sx={{ color: t.purple, "&:hover": { background: t.purpleLight } }}>
+                      <RefreshIcon fontSize="small" sx={{ animation: loading ? "spin 1s linear infinite" : "none" }} />
                     </IconButton>
                   </span>
                 </Tooltip>
-              </Stack>
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.75, display: "block", pl: "46px" }}>
-                Notes are encrypted • Only doctors and nurses can view this thread
-              </Typography>
-            </Composer>
-          )}
-        </ThreadPanel>
-      </Layout>
+              )}
+            </div>
 
-      {/* ── Edit dialog ── */}
-      <EditNoteDialog
-        open={Boolean(editingNote)}
-        note={editingNote}
-        onClose={() => setEditingNote(null)}
-        onSave={handleSaveEdit}
-        saving={sending}
-      />
-    </PageWrapper>
+            {/* Alerts */}
+            <div style={{ padding: "0 22px" }}>
+              {error    && <Alert severity="error" sx={{ mt: 2, borderRadius: "10px" }}>{error}</Alert>}
+              {sendError && <Alert severity="error" sx={{ mt: 2, borderRadius: "10px" }}>{sendError}</Alert>}
+            </div>
+
+            {/* ── Scrollable Messages ──────────────────────────── */}
+            {!activeAppointmentId ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "12px", color: t.textSec, padding: "40px" }}>
+                <ForumIcon sx={{ fontSize: 60, opacity: 0.15 }} />
+                <div style={{ fontSize: "17px", fontWeight: 800, color: t.text }}>No Thread Active</div>
+                <div style={{ fontSize: "13px", textAlign: "center" }}>Enter an appointment ID on the left to load its clinical notes.</div>
+              </div>
+            ) : loading ? (
+              <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                <CircularProgress size={36} sx={{ color: t.purple }} />
+              </div>
+            ) : (
+              <div ref={scrollRef} className="msg-scroll" style={{ flex: 1, overflowY: "auto", padding: "20px 22px", display: "flex", flexDirection: "column", gap: "14px" }}>
+                {messages.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "30px 20px", color: t.textSec, fontSize: "14px", background: t.surfaceAlt, borderRadius: "14px", border: `1px dashed ${t.border}` }}>
+                    No notes yet — be first to add a clinical note.
+                  </div>
+                ) : messages.map((note, index) => {
+                  const isSelf = note.sender_id === user?.user_id;
+                  return (
+                    <div key={note.id} style={{ display: "flex", flexDirection: isSelf ? "row-reverse" : "row", alignItems: "flex-end", gap: "10px", animation: `slideIn 0.3s ease ${index * 0.03}s both` }}>
+                      <Avatar sx={{ width: 32, height: 32, fontSize: "13px", fontWeight: 700, flexShrink: 0,
+                        background: isSelf ? "linear-gradient(135deg, #7C3AED 0%, #0891B2 100%)" : "linear-gradient(135deg, #16A34A 0%, #0891B2 100%)",
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }}>
+                        {(note.sender_name || "?").charAt(0).toUpperCase()}
+                      </Avatar>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: isSelf ? "flex-end" : "flex-start", maxWidth: "72%" }}>
+                        <div style={{ fontSize: "11px", color: t.textSec, marginBottom: "4px", padding: "0 4px" }}>
+                          <strong style={{ color: t.text }}>{isSelf ? "You" : note.sender_name}</strong>
+                          {" · "}
+                          <span style={{ textTransform: "capitalize" }}>{note.sender_role}</span>
+                        </div>
+                        <div style={{
+                          background: isSelf ? t.selfBubble : t.otherBubble,
+                          color: isSelf ? "#fff" : t.otherText,
+                          padding: "11px 15px",
+                          borderRadius: isSelf ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                          boxShadow: t.isDark ? "0 4px 12px rgba(0,0,0,0.3)" : "0 4px 12px rgba(0,0,0,0.06)",
+                          border: isSelf ? "none" : `1px solid ${t.border}`,
+                          fontSize: "14px", lineHeight: "1.55", wordBreak: "break-word",
+                          position: "relative",
+                        }}>
+                          {note.message}
+                          {isSelf && (
+                            <div style={{ position: "absolute", top: "4px", right: "4px" }}>
+                              <NoteActions note={note} mode={mode}
+                                onEdit={() => setEditingNote({ id: note.id, text: note.message })}
+                                onDelete={() => deleteMessage(note.id)} />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* ── Composer ─────────────────────────────────────── */}
+            {activeAppointmentId && (
+              <div style={{ padding: "14px 22px", borderTop: `1px solid ${t.border}`, background: t.isDark ? "rgba(255,255,255,0.02)" : "rgba(124,58,237,0.03)" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "flex-end" }}>
+                  <TextField placeholder="Write a clinical or coordination note…" fullWidth multiline maxRows={4} size="small"
+                    value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={handleComposerKeyDown} disabled={sending}
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: "16px", bgcolor: t.isDark ? "rgba(255,255,255,0.04)" : "#fff" } }} />
+                  <button onClick={handleSend} disabled={!draft.trim() || sending}
+                    style={{
+                      width: "46px", height: "46px", borderRadius: "14px", border: "none", flexShrink: 0,
+                      background: draft.trim() && !sending ? "linear-gradient(135deg, #16A34A 0%, #0891B2 100%)" : t.surfaceAlt,
+                      color: draft.trim() && !sending ? "#fff" : t.textSec,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      cursor: draft.trim() && !sending ? "pointer" : "not-allowed",
+                      boxShadow: draft.trim() && !sending ? "0 4px 16px rgba(22,163,74,0.4)" : "none",
+                      transition: "all 0.2s",
+                    }}>
+                    {sending ? <CircularProgress size={18} sx={{ color: "inherit" }} /> : <SendIcon style={{ fontSize: "20px" }} />}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Edit Dialog ──────────────────────────────────────────── */}
+      <Dialog open={Boolean(editingNote)} onClose={() => setEditingNote(null)} fullWidth maxWidth="xs"
+        PaperProps={{ sx: { borderRadius: "20px", boxShadow: "0 24px 64px rgba(0,0,0,0.25)", bgcolor: t.surface } }}>
+        <DialogTitle sx={{ fontWeight: 800, fontSize: "16px", pb: 1, color: t.text }}>✏️ Edit Note</DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <TextField multiline rows={4} fullWidth value={editingNote?.text || ""}
+            onChange={(e) => setEditingNote((prev) => ({ ...prev, text: e.target.value }))}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: "12px" }, mt: 1 }} />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button onClick={() => setEditingNote(null)} sx={{ borderRadius: "10px", color: t.textSec }}>Cancel</Button>
+          <Button variant="contained" onClick={handleSaveEdit} disabled={!editingNote?.text.trim()}
+            sx={{ borderRadius: "10px", background: "linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%)", fontWeight: 700 }}>
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 
