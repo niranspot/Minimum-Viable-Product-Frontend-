@@ -1,6 +1,7 @@
-import { call, put, takeLatest } from "redux-saga/effects";
+import { call, put, select, takeLatest } from "redux-saga/effects";
 import {
   fetchPrescriptionsAPI,
+  fetchPrescriptionsByPatientAPI,
   createPrescriptionAPI,
   updatePrescriptionAPI,
   updatePrescriptionStatusAPI,
@@ -27,8 +28,26 @@ import { fetchDashboardRequest } from "../dashboard/dashboardSlice";
 
 function* handleFetchPrescriptions() {
   try {
-    const response = yield call(fetchPrescriptionsAPI);
-    yield put(fetchPrescriptionsSuccess(response.data.data));
+    // Patients only ever see their own prescriptions. Everyone else (doctor,
+    // pharmacist, admin) gets the full list. NOTE: the backend must enforce
+    // this too — this is just so the patient view hits the scoped endpoint
+    // instead of relying on the generic list + a client-side filter.
+    const user = yield select((state) => state.auth.user);
+
+    let records;
+    if (user?.role === "patient") {
+      // Adjust this field to whatever your user object actually stores —
+      // could be user.patient_id, user.id, or user.profile_id depending on
+      // how patient accounts are modeled on the backend.
+      const patientId = user.patient_id || user.id;
+      const response = yield call(fetchPrescriptionsByPatientAPI, patientId);
+      records = response.data.data;
+    } else {
+      const response = yield call(fetchPrescriptionsAPI);
+      records = response.data.data;
+    }
+
+    yield put(fetchPrescriptionsSuccess(records));
   } catch (error) {
     yield put(
       fetchPrescriptionsFailure(
@@ -42,7 +61,6 @@ function* handleCreatePrescription(action) {
   try {
     const response = yield call(createPrescriptionAPI, action.payload);
     yield put(createPrescriptionSuccess(response.data.data));
-    // Keep the dashboard's totals/breakdown in sync with this new prescription
     yield put(fetchDashboardRequest());
   } catch (error) {
     yield put(
@@ -71,9 +89,13 @@ function* handleUpdatePrescriptionStatus(action) {
   try {
     const { id, status } = action.payload;
     const response = yield call(updatePrescriptionStatusAPI, id, status);
-    yield put(updatePrescriptionStatusSuccess(response.data.data));
-    // Status moves a prescription between created/verified/dispensed buckets
-    // on the dashboard's "Prescriptions by Doctor" table — refresh it too.
+
+    const payload =
+      response?.data?.data && response.data.data.id !== undefined
+        ? response.data.data
+        : { id, status };
+
+    yield put(updatePrescriptionStatusSuccess(payload));
     yield put(fetchDashboardRequest());
   } catch (error) {
     yield put(
@@ -90,7 +112,6 @@ function* handleDeletePrescription(action) {
     const id = action.payload;
     yield call(deletePrescriptionAPI, id);
     yield put(deletePrescriptionSuccess(id));
-    // The dashboard's totals/breakdown must drop this prescription too
     yield put(fetchDashboardRequest());
   } catch (error) {
     yield put(

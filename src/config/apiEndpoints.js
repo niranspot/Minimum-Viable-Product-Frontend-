@@ -5,9 +5,9 @@ const getBase = () => {
   const hasTenant = parts.length > 1 && !ignored.includes(parts[0]);
 
   if (hasTenant) {
-    return `http://${host}/newphp1/Php_Tasks/012MinimumViableProduct/public`;
+    return `http://${host}/new-MVP/MVP-server/public`;
   }
-  return `http://lvh.me/newphp1/Php_Tasks/012MinimumViableProduct/public`;
+  return `http://lvh.me/new-MVP/MVP-server/public`;  
 };
 
 export const API_BASE = getBase();

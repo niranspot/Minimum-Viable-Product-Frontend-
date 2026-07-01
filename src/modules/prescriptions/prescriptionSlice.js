@@ -48,13 +48,22 @@ const prescriptionSlice = createSlice({
     updatePrescriptionStatusSuccess: (state, action) => {
       state.actionLoading = false;
       const updated = action.payload;
-      // Compare loosely (== not ===): some backends return string ids, others
-      // numeric. A strict mismatch here is exactly how a "successful" PATCH can
-      // silently fail to update the visible chip color.
+      if (!updated || updated.id === undefined || updated.id === null) return;
+      // Compare loosely (string vs numeric ids from different backends), and
+      // merge onto the existing record rather than requiring a full payload —
+      // a partial response (e.g. just { id, status }) is exactly how a
+      // "successful" PATCH can silently fail to update the visible chip color
+      // if we required every field to be present.
       const idx = state.list.findIndex(
         (p) => String(p.id) === String(updated.id),
       );
-      if (idx !== -1) state.list[idx] = { ...state.list[idx], ...updated };
+      if (idx !== -1) {
+        const merged = { ...state.list[idx], ...updated };
+        if (typeof merged.status === "string") {
+          merged.status = merged.status.toLowerCase();
+        }
+        state.list[idx] = merged;
+      }
     },
     updatePrescriptionStatusFailure: (state, action) => {
       state.actionLoading = false;
@@ -69,6 +78,7 @@ const prescriptionSlice = createSlice({
     updatePrescriptionSuccess: (state, action) => {
       state.actionLoading = false;
       const updated = action.payload;
+      if (!updated || updated.id === undefined || updated.id === null) return;
       const idx = state.list.findIndex(
         (p) => String(p.id) === String(updated.id),
       );
