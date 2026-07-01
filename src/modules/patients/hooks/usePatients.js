@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import {
   fetchPatientsRequest,
+  fetchPatientByIdRequest,
   createPatientRequest,
   updatePatientRequest,
   deletePatientRequest,
@@ -9,15 +10,19 @@ import {
 
 const usePatients = () => {
   const dispatch = useDispatch();
-  const { list, loading, error, success } = useSelector((state) => state.patients);
+  const { list, current, loading, error, success } = useSelector((state) => state.patients);
 
-  const fetchPatients  = ()           => dispatch(fetchPatientsRequest());
-  const createPatient  = (data)       => dispatch(createPatientRequest(data));
-  const updatePatient  = (id, data)   => dispatch(updatePatientRequest({ id, data }));
-  const deletePatient  = (id)         => dispatch(deletePatientRequest(id));
-  const clearStatus    = ()           => dispatch(clearPatientStatus());
+  const fetchPatients     = ()         => dispatch(fetchPatientsRequest());
+  const fetchPatientById  = (id)       => dispatch(fetchPatientByIdRequest(id));
+  const createPatient     = (data)     => dispatch(createPatientRequest(data));
+  const updatePatient     = (id, data) => dispatch(updatePatientRequest({ id, data }));
+  const deletePatient     = (id)       => dispatch(deletePatientRequest(id));
+  const clearStatus       = ()         => dispatch(clearPatientStatus());
 
-  return { list, loading, error, success, fetchPatients, createPatient, updatePatient, deletePatient, clearStatus };
+  return {
+    list, current, loading, error, success,
+    fetchPatients, fetchPatientById, createPatient, updatePatient, deletePatient, clearStatus,
+  };
 };
 
 export default usePatients;

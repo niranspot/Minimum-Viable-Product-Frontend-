@@ -31,18 +31,19 @@ export const ENDPOINTS = {
 
   // Patients
   PATIENTS:        '/patients',
- 
+  PATIENT_BY_ID:   (id) => `/patients/${id}`,
+
   // Appointments
-  APPOINTMENTS:    '/appointments',
- 
+  APPOINTMENTS:        '/appointments',
+  APPOINTMENT_BY_ID:   (id) => `/appointments/${id}`,
+
   // Calendar
   CALENDAR:        '/calendar',
- 
+
   // Dashboard
   DASHBOARD_SUMMARY:       '/dashboard/summary',
   DASHBOARD_APPOINTMENTS:  '/dashboard/appointments',
   DASHBOARD_PRESCRIPTIONS: '/dashboard/prescriptions',
-  DASHBOARD_TENANT:        '/dashboard/tenant-analytics',
 
   // Billing
   BILLING:         '/billing',              
