@@ -1,7 +1,6 @@
-import { call, put, select, takeLatest } from "redux-saga/effects";
+import { call, put, takeLatest } from "redux-saga/effects";
 import {
   fetchPrescriptionsAPI,
-  fetchPrescriptionsByPatientAPI,
   createPrescriptionAPI,
   updatePrescriptionAPI,
   updatePrescriptionStatusAPI,
@@ -28,25 +27,14 @@ import { fetchDashboardRequest } from "../dashboard/dashboardSlice";
 
 function* handleFetchPrescriptions() {
   try {
-    // Patients only ever see their own prescriptions. Everyone else (doctor,
-    // pharmacist, admin) gets the full list. NOTE: the backend must enforce
-    // this too — this is just so the patient view hits the scoped endpoint
-    // instead of relying on the generic list + a client-side filter.
-    const user = yield select((state) => state.auth.user);
-
-    let records;
-    if (user?.role === "patient") {
-      // Adjust this field to whatever your user object actually stores —
-      // could be user.patient_id, user.id, or user.profile_id depending on
-      // how patient accounts are modeled on the backend.
-      const patientId = user.patient_id || user.id;
-      const response = yield call(fetchPrescriptionsByPatientAPI, patientId);
-      records = response.data.data;
-    } else {
-      const response = yield call(fetchPrescriptionsAPI);
-      records = response.data.data;
-    }
-
+    // Use GET /prescriptions for ALL roles:
+    //   - patient  → backend's getForLoggedInPatient() scopes to their own records only
+    //   - doctor   → backend's getForDoctor() scopes to their own created prescriptions
+    //   - pharmacist → backend returns all (read-only)
+    // Do NOT call /patients/:id/prescriptions for patients — that endpoint
+    // only allows doctor/pharmacist and returns 403 for the patient role.
+    const response = yield call(fetchPrescriptionsAPI);
+    const records = response.data.data;
     yield put(fetchPrescriptionsSuccess(records));
   } catch (error) {
     yield put(
