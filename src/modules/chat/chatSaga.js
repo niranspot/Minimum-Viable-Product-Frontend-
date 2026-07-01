@@ -1,5 +1,5 @@
 import { call, put, select, takeLatest } from "redux-saga/effects";
-import { fetchMessagesAPI, sendMessageAPI } from "./chatAPI";
+import { fetchMessagesAPI, sendMessageAPI, updateMessageAPI, deleteMessageAPI } from "./chatAPI";
 import {
   fetchMessagesRequest,
   fetchMessagesSuccess,
@@ -7,6 +7,12 @@ import {
   sendMessageRequest,
   sendMessageSuccess,
   sendMessageFailure,
+  updateMessageRequest,
+  updateMessageSuccess,
+  updateMessageFailure,
+  deleteMessageRequest,
+  deleteMessageSuccess,
+  deleteMessageFailure,
 } from "./chatSlice";
 
 function* handleFetchMessages(action) {
@@ -28,8 +34,6 @@ function* handleSendMessage(action) {
     const { appointmentId, message } = action.payload;
     const response = yield call(sendMessageAPI, appointmentId, message);
 
-    // The API only returns { message_id }. Build the display note locally
-    // using the logged-in user's identity from the auth store.
     const authUser = yield select((state) => state.auth.user);
 
     const note = {
@@ -52,7 +56,38 @@ function* handleSendMessage(action) {
   }
 }
 
+function* handleUpdateMessage(action) {
+  try {
+    const { id, message } = action.payload;
+    yield call(updateMessageAPI, id, message);
+    
+    yield put(updateMessageSuccess({ id, message }));
+  } catch (error) {
+    yield put(
+      updateMessageFailure(
+        error.response?.data?.message || "Failed to update note."
+      )
+    );
+  }
+}
+
+function* handleDeleteMessage(action) {
+  try {
+    const id = action.payload;
+    yield call(deleteMessageAPI, id);
+    yield put(deleteMessageSuccess(id));
+  } catch (error) {
+    yield put(
+      deleteMessageFailure(
+        error.response?.data?.message || "Failed to delete note."
+      )
+    );
+  }
+}
+
 export default function* chatSaga() {
   yield takeLatest(fetchMessagesRequest.type, handleFetchMessages);
   yield takeLatest(sendMessageRequest.type, handleSendMessage);
+  yield takeLatest(updateMessageRequest.type, handleUpdateMessage);
+  yield takeLatest(deleteMessageRequest.type, handleDeleteMessage);
 }

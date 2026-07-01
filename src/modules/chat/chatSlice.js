@@ -46,6 +46,34 @@ const chatSlice = createSlice({
       state.sendError = action.payload;
     },
 
+    // Edit a note
+    updateMessageRequest: (state) => {
+      state.sending = true;
+      state.sendError = null;
+    },
+    updateMessageSuccess: (state, action) => {
+      state.sending = false;
+      const index = state.messages.findIndex(m => m.id === action.payload.id);
+      if (index !== -1) {
+        state.messages[index].message = action.payload.message;
+      }
+    },
+    updateMessageFailure: (state, action) => {
+      state.sending = false;
+      state.sendError = action.payload;
+    },
+
+    // Delete a note
+    deleteMessageRequest: (state) => {
+      state.error = null;
+    },
+    deleteMessageSuccess: (state, action) => {
+      state.messages = state.messages.filter(m => m.id !== action.payload);
+    },
+    deleteMessageFailure: (state, action) => {
+      state.error = action.payload;
+    },
+
     clearChatError: (state) => {
       state.error = null;
       state.sendError = null;
@@ -61,6 +89,12 @@ export const {
   sendMessageRequest,
   sendMessageSuccess,
   sendMessageFailure,
+  updateMessageRequest,
+  updateMessageSuccess,
+  updateMessageFailure,
+  deleteMessageRequest,
+  deleteMessageSuccess,
+  deleteMessageFailure,
   clearChatError,
 } = chatSlice.actions;
 

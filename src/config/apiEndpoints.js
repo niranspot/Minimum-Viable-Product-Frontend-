@@ -41,6 +41,7 @@ export const ENDPOINTS = {
   // Communication (appointment notes / messages)
   MESSAGES:                '/messages',                                  // POST (create)
   MESSAGES_BY_APPOINTMENT: (appointmentId) => `/messages/${appointmentId}`, // GET (list)
+  MESSAGE_BY_ID:           (id) => `/messages/${id}`,
 
   // Prescriptions
   PRESCRIPTIONS:            '/prescriptions',                       // POST (create), GET (list)

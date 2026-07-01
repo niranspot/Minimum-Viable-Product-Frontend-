@@ -3,6 +3,8 @@ import {
   setActiveAppointment,
   fetchMessagesRequest,
   sendMessageRequest,
+  updateMessageRequest,
+  deleteMessageRequest,
   clearChatError,
 } from "../chatSlice";
 
@@ -20,6 +22,14 @@ const useChat = () => {
     dispatch(sendMessageRequest({ appointmentId, message }));
   };
 
+  const updateMessage = (id, message) => {
+    dispatch(updateMessageRequest({ id, message }));
+  };
+
+  const deleteMessage = (id) => {
+    dispatch(deleteMessageRequest(id));
+  };
+
   const clearError = () => {
     dispatch(clearChatError());
   };
@@ -33,6 +43,8 @@ const useChat = () => {
     sendError,
     openAppointment,
     sendMessage,
+    updateMessage,
+    deleteMessage,
     clearError,
   };
 };
