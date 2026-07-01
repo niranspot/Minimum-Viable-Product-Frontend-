@@ -16,3 +16,10 @@ export const createAppointmentAPI = (data) =>
 // patient:      { status: 'cancelled' } only
 export const updateAppointmentAPI = (id, data) =>
   axiosClient.put(ENDPOINTS.APPOINTMENT_BY_ID(id), data);
+
+//Users
+export const fetchDoctorsAPI =() =>
+  axiosClient.get(ENDPOINTS.DOCTORS_LIST);
+
+export const fetchPatientsAPI =() =>
+  axiosClient.get(ENDPOINTS.PATIENTS_LIST);

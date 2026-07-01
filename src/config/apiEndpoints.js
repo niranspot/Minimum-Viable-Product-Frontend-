@@ -70,4 +70,6 @@ export const ENDPOINTS = {
   //Users
   USERS:           '/users',
   USER_STATUS:     (id) => `/users/${id}/status`,
+  DOCTORS_LIST:    '/users/doctors',  
+  PATIENTS_LIST:   '/users/patients',
 };

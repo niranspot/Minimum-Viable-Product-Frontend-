@@ -19,6 +19,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 import useAppointments from '../../modules/appointments/hooks/useAppointments';
 import { useSelector }  from 'react-redux';
 
+
 // ── Hero banner (Unsplash) ──────────────────────────────────────
 const Hero = styled.div`
   position: relative;
@@ -258,8 +259,8 @@ const emptyForm = {
 // ── Component ─────────────────────────────────────────────────
 const AppointmentsPage = () => {
   const {
-    list, loading, error, success,
-    fetchAppointments, createAppointment, updateAppointment, clearStatus,
+    list, loading, error, success,doctors, patients,
+    fetchAppointments, createAppointment, updateAppointment, clearStatus,fetchDropdownLists
   } = useAppointments();
   const { user } = useSelector((s) => s.auth);
   const isPatient = user?.role === 'patient';
@@ -269,8 +270,12 @@ const AppointmentsPage = () => {
   const [editTarget, setEditTarget] = useState(null);
   const [form,       setForm]       = useState(emptyForm);
   const [statusFilter, setStatusFilter] = useState('');
-
-  useEffect(() => { fetchAppointments(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { 
+    fetchAppointments();
+    if (user?.role) {
+      fetchDropdownLists(user.role); 
+    }
+   }, []); 
 
   useEffect(() => {
     if (success) {
@@ -513,7 +518,7 @@ const AppointmentsPage = () => {
             ? isPatient ? 'Cancel Appointment' : 'Update Appointment'
             : isPatient ? 'Book Appointment' : 'New Appointment'}
         </DialogTitle>
-        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
+<DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
 
           {editTarget && isPatient ? (
             <Typography>Are you sure you want to cancel this appointment?</Typography>
@@ -521,18 +526,46 @@ const AppointmentsPage = () => {
             <>
               {!editTarget && (
                 <>
+                  {/* PATIENT SELECT DROPDOWN (Hidden if the user logged in is already a patient) */}
                   {!isPatient && (
-                    <TextField label="Patient ID" value={form.patient_id}
+                    <TextField
+                      select
+                      label="Select Patient"
+                      value={form.patient_id}
                       onChange={(e) => setForm({ ...form, patient_id: e.target.value })}
-                      size="small" fullWidth required />
+                      size="small"
+                      fullWidth
+                      required
+                    >
+                      {patients.map((p) => (
+                        <MenuItem key={p.id} value={p.id}>
+                          {p.name || `ID: ${p.id}`}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   )}
-                  <TextField label="Doctor ID" value={form.doctor_id}
+
+                  {/* DOCTOR SELECT DROPDOWN */}
+                  <TextField
+                    select
+                    label="Select Doctor"
+                    value={form.doctor_id}
                     onChange={(e) => setForm({ ...form, doctor_id: e.target.value })}
-                    size="small" fullWidth required
-                    helperText="ID of an active doctor in your tenant" />
+                    size="small"
+                    fullWidth
+                    required
+                    helperText="Select an active doctor within your tenant layout"
+                  >
+                    {doctors.map((d) => (
+                      <MenuItem key={d.id} value={d.id}>
+                        Dr. {d.name || d.id}
+                      </MenuItem>
+                    ))}
+                  </TextField>
                 </>
               )}
 
+              {/* ... Datepicker, Status modification and Notes remain beautifully operational ... */}
               <Box>
                 <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary', fontWeight: 600 }}>
                   Appointment Date & Time

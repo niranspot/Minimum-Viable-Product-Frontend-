@@ -1,10 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  list:    [],
+  list:     [],
+  doctors:  [], // <── Added
+  patients: [],
   loading: false,
   error:   null,
   success: null,
+
 };
 
 const appointmentSlice = createSlice({
@@ -23,6 +26,16 @@ const appointmentSlice = createSlice({
     updateAppointmentSuccess: (state) => { state.loading = false; state.success = 'Appointment updated successfully'; },
     updateAppointmentFailure: (state, action) => { state.loading = false; state.error = action.payload; },
 
+    fetchDropdownListsRequest: (state) => { state.loading = true; },
+    fetchDropdownListsSuccess: (state, action) => {
+      state.loading = false;
+      state.doctors = action.payload.doctors;
+      state.patients = action.payload.patients;
+    },
+    fetchDropdownListsFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
     clearAppointmentStatus: (state) => { state.error = null; state.success = null; },
   },
 });
@@ -31,7 +44,7 @@ export const {
   fetchAppointmentsRequest, fetchAppointmentsSuccess, fetchAppointmentsFailure,
   createAppointmentRequest, createAppointmentSuccess, createAppointmentFailure,
   updateAppointmentRequest, updateAppointmentSuccess, updateAppointmentFailure,
-  clearAppointmentStatus,
+  clearAppointmentStatus,fetchDropdownListsRequest, fetchDropdownListsSuccess, fetchDropdownListsFailure,
 } = appointmentSlice.actions;
 
 export default appointmentSlice.reducer;
