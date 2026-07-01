@@ -23,5 +23,5 @@ export const getSubdomain = () => {
 export const getTenantApiBase = () => {
   const sub = getSubdomain();
   if (!sub) return null;
-  return `http://localhost/newphp1/Php_Tasks/012MinimumViableProduct/public`;
+  return process.env.REACT_APP_TENANT_API_BASE;
 };

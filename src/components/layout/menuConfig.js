@@ -64,7 +64,7 @@ export const menuItems = [
     label: 'Billing',
     icon: <ReceiptIcon />,
     path: '/dashboard/billing',
-    roles: ['admin', 'pharmacist','patient'],
+    roles: ['admin', 'pharmacist','patient', 'doctor'],
   },
    {
     key: 'prescriptions',

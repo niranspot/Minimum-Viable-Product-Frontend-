@@ -89,17 +89,7 @@ const Topbar = ({ sidebarOpen, isMobile, onMobileToggle }) => {
             />
           )}
 
-          <Tooltip title="Notifications">
-            <IconButton size="small" sx={{ color: 'text.secondary' }}>
-              <NotificationsIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
 
-          <Tooltip title={mode === 'light' ? 'Dark mode' : 'Light mode'}>
-            <IconButton size="small" onClick={toggleTheme} sx={{ color: 'text.secondary' }}>
-              {mode === 'light' ? <DarkModeIcon fontSize="small" /> : <LightModeIcon fontSize="small" />}
-            </IconButton>
-          </Tooltip>
 
           <Tooltip title="Logout">
             <IconButton size="small" onClick={logout} sx={{ color: '#C62828' }}>
