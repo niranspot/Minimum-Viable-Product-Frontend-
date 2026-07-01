@@ -21,8 +21,8 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutlined";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutlined";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import DateRangeIcon from "@mui/icons-material/DateRange";
 import { useSelector } from "react-redux";
