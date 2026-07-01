@@ -1,14 +1,14 @@
-import { call, put, takeLatest, all } from "redux-saga/effects";
+import { call, put, takeLatest, all } from 'redux-saga/effects';
 import {
   fetchDashboardSummaryAPI,
   fetchDashboardAppointmentsAPI,
   fetchDashboardPrescriptionsAPI,
-} from "./dashboardAPI";
+} from './dashboardAPI';
 import {
   fetchDashboardRequest,
   fetchDashboardSuccess,
   fetchDashboardFailure,
-} from "./dashboardSlice";
+} from './dashboardSlice';
 
 function* handleFetchDashboard() {
   try {
@@ -20,20 +20,17 @@ function* handleFetchDashboard() {
     ]);
     yield put(
       fetchDashboardSuccess({
-        summary: summaryRes.data.data,
-        appointments: appointmentsRes.data.data,
+        summary:       summaryRes.data.data,
+        appointments:  appointmentsRes.data.data,
         prescriptions: prescriptionsRes.data.data,
       }),
     );
   } catch (err) {
     yield put(
-      fetchDashboardFailure(
-        err.response?.data?.message || "Failed to load dashboard",
-      ),
+      fetchDashboardFailure(err.response?.data?.message || 'Failed to load dashboard'),
     );
   }
 }
-
 
 export default function* dashboardSaga() {
   yield takeLatest(fetchDashboardRequest.type, handleFetchDashboard);
