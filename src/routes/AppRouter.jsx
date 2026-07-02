@@ -81,14 +81,14 @@ const AppRouter = () => {
   }
 >
   <Route index element={<DashboardIndexGate />} />
-  <Route path="staff" element={<RoleGate roles={['admin','doctor','nurse']}><StaffPage /></RoleGate>} />
+  <Route path="staff" element={<RoleGate roles={['admin']}><StaffPage /></RoleGate>} />
   <Route path="UserStatus" element={<RoleGate roles={['admin']}><UserStatus /></RoleGate>} />
   <Route path="tenantsetting" element={<RoleGate roles={['admin']}><TenantSettingsPage /></RoleGate>} />
   <Route path="patients" element={<RoleGate roles={['doctor','nurse']}><PatientsPage /></RoleGate>} />
   <Route path="appointments" element={<RoleGate roles={['doctor','nurse','receptionist','patient']}><AppointmentsPage /></RoleGate>} />
   <Route path="communication" element={<RoleGate roles={['admin','doctor','nurse','patient']}><CommunicationPage /></RoleGate>} />
   <Route path="billing" element={<RoleGate roles={['admin','pharmacist','patient','doctor']}><BillingPage /></RoleGate>} />
-  <Route path="prescriptions" element={<RoleGate roles={['admin','doctor','pharmacist','patient']}><PrescriptionsPage /></RoleGate>} />
+  <Route path="prescriptions" element={<RoleGate roles={['doctor','pharmacist','patient']}><PrescriptionsPage /></RoleGate>} />
   <Route path="calendar" element={<RoleGate roles={['admin','doctor','receptionist']}><CalendarPage /></RoleGate>} />
 </Route>
 
