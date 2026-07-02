@@ -263,6 +263,7 @@ const AppointmentsPage = () => {
   } = useAppointments();
   const { user } = useSelector((s) => s.auth);
   const isPatient = user?.role === 'patient';
+  const isdoctor = user?.role === 'doctor';
 
   const [search,     setSearch]     = useState('');
   const [modalOpen,  setModalOpen]  = useState(false);
@@ -304,7 +305,11 @@ const AppointmentsPage = () => {
   const cancelled = list.filter((a) => a.status === 'cancelled').length;
 
   // ── Handlers ────────────────────────────────────────────────
-  const openCreate = () => { setEditTarget(null); setForm(emptyForm); setModalOpen(true); };
+ const openCreate = () => {
+  setEditTarget(null);
+  setForm(isdoctor ? { ...emptyForm, doctor_id: user.user_id } : emptyForm);
+  setModalOpen(true);
+};
 
   const openEdit = (record) => {
     setEditTarget(record);
@@ -318,26 +323,38 @@ const AppointmentsPage = () => {
     setModalOpen(true);
   };
 
-  const handleSubmit = () => {
-    if (editTarget) {
-      // Patient can only cancel — enforced client-side to match backend rule
-      if (isPatient) {
-        updateAppointment(editTarget.id, { status: 'cancelled', appointment_date: editTarget.appointment_date });
-      } else {
-        updateAppointment(editTarget.id, {
-          status:           form.status,
-          appointment_date: form.appointment_date,
-          notes:            form.notes,
-        });
-      }
+const handleSubmit = () => {
+  if (editTarget) {
+    if (isPatient) {
+      updateAppointment(editTarget.id, { status: 'cancelled', appointment_date: editTarget.appointment_date });
     } else {
-      // patient_id is auto-resolved server-side from the JWT for the patient role
-      const payload = isPatient
-        ? { doctor_id: form.doctor_id, appointment_date: form.appointment_date, notes: form.notes }
-        : form;
-      createAppointment(payload);
+      updateAppointment(editTarget.id, {
+        status:           form.status,
+        appointment_date: form.appointment_date,
+        notes:            form.notes,
+      });
     }
-  };
+  } else {
+    if (isPatient) {
+      createAppointment({
+        doctor_id:        form.doctor_id,
+        appointment_date: form.appointment_date,
+        notes:            form.notes,
+      });
+    } else if (isdoctor) {
+      createAppointment({
+        doctor_id:        user.user_id,
+        patient_id:       form.patient_id,
+        appointment_date: form.appointment_date,
+        notes:            form.notes,
+        status:           form.status,
+      });
+    } else {
+      // admin — sends full form as-is
+      createAppointment(form);
+    }
+  }
+};
 
   // ── Table columns ────────────────────────────────────────────
   const columns = [

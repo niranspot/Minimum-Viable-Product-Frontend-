@@ -19,21 +19,21 @@ export const menuItems = [
   },
   {
     key: 'staff',
-    label: 'Users & Staff',
+    label: 'Staffs',
     icon: <PeopleIcon />,
     path: '/dashboard/staff',
-    roles: ['admin', 'doctor', 'nurse'],
+    roles: ['admin'],
   },
     {
     key: 'useractivation',
-    label: 'Users',
+    label: 'Users Activation',
     icon: <PeopleIcon />,
     path: '/dashboard/UserStatus',
     roles: ['admin'],
   },
     {
     key: 'tenantsetting',
-    label: 'tenantsetting',
+    label: 'Tenantsetting',
     icon: <SettingsIcon />,
     path: '/dashboard/tenantsetting',
     roles: ['admin'],
@@ -71,14 +71,14 @@ export const menuItems = [
     label: 'Prescriptions',
     icon: <MedicationIcon />,
     path: '/dashboard/prescriptions',
-    roles: ['admin', 'doctor', 'pharmacist','patient'],
+    roles: ['doctor', 'pharmacist','patient'],
   },
   {
     key: 'calendar',
     label: 'Calendar',
     icon: <CalendarMonthIcon />,
     path: '/dashboard/calendar',
-    roles: ['admin', 'doctor', 'receptionist'],
+    roles: [ 'doctor', 'receptionist'],
   },
 
 ];
