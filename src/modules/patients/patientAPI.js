@@ -21,3 +21,7 @@ export const updatePatientAPI = (id, data) =>
 // DELETE /patients/{id} — soft delete (doctor, nurse)
 export const deletePatientAPI = (id) =>
   axiosClient.delete(ENDPOINTS.PATIENT_BY_ID(id));
+
+//get patients lists
+export const fetchPatientsDropAPI =() =>
+  axiosClient.get(ENDPOINTS.User_PATIENTS_LIST);

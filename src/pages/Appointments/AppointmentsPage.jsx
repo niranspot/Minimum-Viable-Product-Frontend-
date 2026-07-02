@@ -258,8 +258,8 @@ const emptyForm = {
 // ── Component ─────────────────────────────────────────────────
 const AppointmentsPage = () => {
   const {
-    list, loading, error, success,
-    fetchAppointments, createAppointment, updateAppointment, clearStatus,
+    list, loading, error, success, isOnline, queue, syncing, patients,
+    fetchAppointments, createAppointment, updateAppointment, clearStatus, fetchDropdownLists,
   } = useAppointments();
   const { user } = useSelector((s) => s.auth);
   const isPatient = user?.role === 'patient';
@@ -270,7 +270,12 @@ const AppointmentsPage = () => {
   const [form,       setForm]       = useState(emptyForm);
   const [statusFilter, setStatusFilter] = useState('');
 
-  useEffect(() => { fetchAppointments(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { 
+    fetchAppointments();
+    if (user?.role) {
+      fetchDropdownLists(user.role); 
+    }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (success) {
@@ -416,6 +421,28 @@ const AppointmentsPage = () => {
       {error   && <Alert severity="error"   onClose={clearStatus} sx={{ mb: 2 }}>{error}</Alert>}
       {success && <Alert severity="success" onClose={clearStatus} sx={{ mb: 2 }}>{success}</Alert>}
 
+
+      {!isOnline && (
+  <Alert severity="warning" sx={{ mb: 2 }}>
+    You're offline. {queue.length > 0
+      ? `${queue.length} appointment(s) are saved locally and will be booked automatically once you're back online.`
+      : 'New appointments will be saved locally until your connection returns.'}
+  </Alert>
+)}
+
+{isOnline && syncing && (
+  <Alert severity="info" sx={{ mb: 2 }}>
+    Syncing queued appointments...
+  </Alert>
+)}
+
+{isOnline && !syncing && queue.some((q) => q.status === 'failed') && (
+  <Alert severity="error" sx={{ mb: 2 }}>
+    Some queued appointments failed to sync and will be retried on your next reconnect.
+  </Alert>
+)}
+
+
       {/* Stats */}
       <StatsRow>
         <StatCard accent="#E65100">
@@ -484,6 +511,7 @@ const AppointmentsPage = () => {
               }}
             >
               {isPatient ? 'Book Appointment' : 'New Appointment'}
+              {queue.length > 0 && ` (${queue.length} queued)`}
             </Button>
           </Box>
         </TopRow>
