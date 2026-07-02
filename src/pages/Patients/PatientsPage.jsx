@@ -396,7 +396,7 @@ const PatientsPage = () => {
         <HeroText>
           <Typography sx={{ fontSize: 28, fontWeight: 800, mb: 1 }}>Patient Management</Typography>
           <Typography sx={{ fontSize: 14.5, opacity: 0.92, lineHeight: 1.5 }}>
-            View, register, and maintain encrypted patient health records for your tenant.
+            View, edit, register and maintain encrypted patient health records.
           </Typography>
           <HeroBadges>
             <HeroBadge><VerifiedUserIcon style={{ fontSize: 16 }} /> Secure Records</HeroBadge>
