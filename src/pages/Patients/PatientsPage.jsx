@@ -443,11 +443,7 @@ const PatientsPage = () => {
               style={{ width: 230, borderRadius: 999 }}
               allowClear
             />
-            <Tooltip title="Filter">
-              <RoundIconButton size="small">
-                <FilterListIcon fontSize="small" />
-              </RoundIconButton>
-            </Tooltip>
+            
             <Tooltip title="Refresh">
               <span>
                 <RoundIconButton size="small" onClick={fetchPatients} disabled={loading}>
