@@ -262,6 +262,7 @@ const CalendarPage = () => {
     </Typography>
     <HeroBadges>
       <HeroBadge><EventIcon style={{ fontSize: 16 }} /> Monthly View</HeroBadge>
+      <HeroBadge><EventIcon style={{ fontSize: 16 }} /> Appointment View</HeroBadge>
       <HeroBadge><RefreshIcon style={{ fontSize: 16 }} /> Live Sync</HeroBadge>
     </HeroBadges>
   </HeroText>
