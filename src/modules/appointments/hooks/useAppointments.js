@@ -9,15 +9,22 @@ import {
 
 const useAppointments = () => {
   const dispatch = useDispatch();
-  const { list, loading, error, success,doctors, patients, } = useSelector((s) => s.appointments);
+  const {
+    list, loading, error, success,
+    isOnline, queue, syncing, doctors, patients,
+  } = useSelector((s) => s.appointments);
 
   const fetchAppointments  = ()         => dispatch(fetchAppointmentsRequest());
   const createAppointment  = (data)     => dispatch(createAppointmentRequest(data));
   const updateAppointment  = (id, data) => dispatch(updateAppointmentRequest({ id, data }));
-  const fetchDropdownLists  = (role)         => dispatch(fetchDropdownListsRequest(role));
   const clearStatus        = ()         => dispatch(clearAppointmentStatus());
+  const fetchDropdownLists  = (role)         => dispatch(fetchDropdownListsRequest(role));
 
-  return { list, doctors, patients, loading, error, success, fetchAppointments, createAppointment, updateAppointment, clearStatus, fetchDropdownLists };
+  return {
+    list, loading, error, success,
+    isOnline, queue, syncing,
+    fetchAppointments, createAppointment, updateAppointment, clearStatus, fetchDropdownLists,
+  };
 };
 
 export default useAppointments;
