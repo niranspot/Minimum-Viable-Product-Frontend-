@@ -71,5 +71,6 @@ export const ENDPOINTS = {
   USERS:           '/users',
   USER_STATUS:     (id) => `/users/${id}/status`,
   DOCTORS_LIST:    '/users/doctors',  
-  PATIENTS_LIST:   '/users/patients',
+  PATIENTS_LIST:   '/patient/patients',
+  User_PATIENTS_LIST:   '/users/patients'
 };

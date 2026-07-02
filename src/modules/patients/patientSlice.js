@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   list:    [],
+  patients: [],
   current: null,
   loading: false,
   error:   null,
@@ -38,6 +39,17 @@ const patientSlice = createSlice({
     fetchPatientByIdFailure: (state, action) => {
       state.loading = false;
       state.error   = action.payload;
+    },
+
+    //patients
+    fetchDropdownListsRequest: (state) => { state.loading = true; },
+    fetchDropdownListsSuccess: (state, action) => {
+      state.loading = false;
+      state.patients = action.payload.patients;
+    },
+    fetchDropdownListsFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
     },
 
     // Create
@@ -98,7 +110,7 @@ export const {
   createPatientRequest, createPatientSuccess, createPatientFailure,
   updatePatientRequest, updatePatientSuccess, updatePatientFailure,
   deletePatientRequest, deletePatientSuccess, deletePatientFailure,
-  clearPatientStatus,
+  clearPatientStatus,fetchDropdownListsRequest, fetchDropdownListsSuccess, fetchDropdownListsFailure,
 } = patientSlice.actions;
 
 export default patientSlice.reducer;
