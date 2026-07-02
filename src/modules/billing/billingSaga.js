@@ -6,6 +6,7 @@ import {
   takeLatest,
   takeEvery,
   select,
+  delay,
 } from "redux-saga/effects";
 import { eventChannel } from "redux-saga";
 import {
@@ -65,8 +66,13 @@ function* watchNetworkStatus() {
   const channel = yield call(createNetworkChannel);
   while (true) {
     const online = yield take(channel);
+    console.log("Network event fired:", online); // <-- add this
+
     yield put(setOnlineStatus(online));
+
     if (online) {
+      console.log("Calling flushOfflineQueue"); // <-- add this
+
       yield call(flushOfflineQueue);
     }
   }
@@ -234,8 +240,29 @@ function* handleUpdateBillingStatus(action) {
   }
 }
 
+function* pollNetworkStatus() {
+  while (true) {
+    const browserOnline = navigator.onLine;
+    const reduxOnline = yield select((state) => state.billing.isOnline);
+
+    if (browserOnline !== reduxOnline) {
+      console.log("Network status changed:", browserOnline);
+
+      yield put(setOnlineStatus(browserOnline));
+
+      if (browserOnline) {
+        console.log("Calling flushOfflineQueue...");
+        yield call(flushOfflineQueue);
+      }
+    }
+
+    yield delay(3000); // Check every 3 seconds
+  }
+}
+
 export default function* billingSaga() {
   yield fork(watchNetworkStatus);
+  yield fork(pollNetworkStatus);
   yield fork(hydrateAndSyncOnBoot);
   yield takeLatest(fetchBillingRequest.type, handleFetchBilling);
   yield takeEvery(createBillingRequest.type, handleCreateBilling);
