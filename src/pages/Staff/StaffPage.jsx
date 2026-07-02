@@ -261,8 +261,7 @@ const StaffActionsMenu = ({ staff, onEdit, onToggleStatus, onDelete }) => {
 };
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
-// Staff & Role Management — admin only (per StaffController: store/update/destroy
-// all gate on ['admin']; index/show also allow doctor/nurse to view).
+// Staff & Role Management 
 
 const StaffPage = () => {
   const {
@@ -283,7 +282,6 @@ const StaffPage = () => {
 
   useEffect(() => {
     fetchStaff();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const prevListLength = React.useRef(list.length);

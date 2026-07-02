@@ -258,7 +258,7 @@ const emptyForm = {
 // ── Component ─────────────────────────────────────────────────
 const AppointmentsPage = () => {
   const {
-    list, loading, error, success, isOnline, queue, syncing, patients,
+    list, loading, error, success, isOnline, queue, syncing, patients,doctors,
     fetchAppointments, createAppointment, updateAppointment, clearStatus, fetchDropdownLists,
   } = useAppointments();
   const { user } = useSelector((s) => s.auth);
@@ -275,7 +275,7 @@ const AppointmentsPage = () => {
     if (user?.role) {
       fetchDropdownLists(user.role); 
     }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
   useEffect(() => {
     if (success) {
@@ -549,15 +549,43 @@ const AppointmentsPage = () => {
             <>
               {!editTarget && (
                 <>
+                  {/* PATIENT SELECT DROPDOWN (Hidden if the user logged in is already a patient) */}
                   {!isPatient && (
-                    <TextField label="Patient ID" value={form.patient_id}
+                    <TextField
+                      select
+                      label="Select Patient"
+                      value={form.patient_id}
                       onChange={(e) => setForm({ ...form, patient_id: e.target.value })}
-                      size="small" fullWidth required />
+                      size="small"
+                      fullWidth
+                      required
+                    >
+                      {patients.map((p) => (
+                        <MenuItem key={p.patient_id} value={p.patient_id}>
+                          {p.name || `ID: ${p.patient_id}`}
+                        </MenuItem>
+                      ))}
+                    </TextField>
                   )}
-                  <TextField label="Doctor ID" value={form.doctor_id}
+
+                  {/* DOCTOR SELECT DROPDOWN */}
+                  {isPatient &&
+                  <TextField
+                    select
+                    label="Select Doctor"
+                    value={form.doctor_id}
                     onChange={(e) => setForm({ ...form, doctor_id: e.target.value })}
-                    size="small" fullWidth required
-                    helperText="ID of an active doctor in your tenant" />
+                    size="small"
+                    fullWidth
+                    required
+                    helperText="Select an active doctor within your tenant layout"
+                  >
+                    {doctors.map((d) => (
+                      <MenuItem key={d.id} value={d.id}>
+                        Dr. {d.name || d.id}
+                      </MenuItem>
+                    ))}
+                  </TextField>}
                 </>
               )}
 
