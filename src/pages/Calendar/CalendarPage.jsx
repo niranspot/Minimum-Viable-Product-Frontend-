@@ -258,10 +258,11 @@ const CalendarPage = () => {
   <HeroText>
     <Typography sx={{ fontSize: 28, fontWeight: 800, mb: 1 }}>Appointment Calendar</Typography>
     <Typography sx={{ fontSize: 14.5, opacity: 0.92, lineHeight: 1.5 }}>
-      Browse confirmed, pending, and completed appointments by day across your tenant.
+      Browse confirmed, pending, completed and cancelled appointments by day.
     </Typography>
     <HeroBadges>
       <HeroBadge><EventIcon style={{ fontSize: 16 }} /> Monthly View</HeroBadge>
+      <HeroBadge><EventIcon style={{ fontSize: 16 }} /> Appointment View</HeroBadge>
       <HeroBadge><RefreshIcon style={{ fontSize: 16 }} /> Live Sync</HeroBadge>
     </HeroBadges>
   </HeroText>

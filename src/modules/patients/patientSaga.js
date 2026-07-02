@@ -5,6 +5,7 @@ import {
   createPatientAPI,
   updatePatientAPI,
   deletePatientAPI,
+  fetchPatientsDropAPI
 } from './patientAPI';
 import {
   fetchPatientsRequest, fetchPatientsSuccess, fetchPatientsFailure,
@@ -12,6 +13,7 @@ import {
   createPatientRequest, createPatientSuccess, createPatientFailure,
   updatePatientRequest, updatePatientSuccess, updatePatientFailure,
   deletePatientRequest, deletePatientSuccess, deletePatientFailure,
+  fetchDropdownListsRequest, fetchDropdownListsSuccess, fetchDropdownListsFailure
 } from './patientSlice';
 
 function* handleFetchPatients() {
@@ -64,10 +66,26 @@ function* handleDeletePatient(action) {
   }
 }
 
+
+function* handleFetchDropdownLists(action) {
+  try {
+    const userRole = action.payload; // Passed from the component
+    let patients = [];
+    const patientsRes = yield call(fetchPatientsDropAPI);
+    patients = patientsRes.data.data || patientsRes.data;
+
+    yield put(fetchDropdownListsSuccess({ patients }));
+  } catch (err) {
+    yield put(fetchDropdownListsFailure(err.response?.data?.message || 'Failed to load dropdown lists'));
+  }
+}
+
+
 export default function* patientSaga() {
   yield takeLatest(fetchPatientsRequest.type,     handleFetchPatients);
   yield takeLatest(fetchPatientByIdRequest.type,  handleFetchPatientById);
   yield takeLatest(createPatientRequest.type,     handleCreatePatient);
   yield takeLatest(updatePatientRequest.type,     handleUpdatePatient);
   yield takeLatest(deletePatientRequest.type,     handleDeletePatient);
+  yield takeLatest(fetchDropdownListsRequest.type, handleFetchDropdownLists);
 }

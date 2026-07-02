@@ -892,7 +892,8 @@ const EmptyState = ({ canManage }) => (
   </div>
 );
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ─── Main page ─────────────────────────────────────────────────────────────────
+// Staff & Role Management 
 
 const StaffPage = () => {
   const { user } = useSelector((state) => state.auth);
@@ -917,7 +918,6 @@ const StaffPage = () => {
 
   useEffect(() => {
     fetchStaff();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const prevLen = React.useRef(list.length);
