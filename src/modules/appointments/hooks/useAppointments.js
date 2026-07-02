@@ -22,7 +22,7 @@ const useAppointments = () => {
 
   return {
     list, loading, error, success,
-    isOnline, queue, syncing,
+    isOnline, queue, syncing,patients,doctors,
     fetchAppointments, createAppointment, updateAppointment, clearStatus, fetchDropdownLists,
   };
 };

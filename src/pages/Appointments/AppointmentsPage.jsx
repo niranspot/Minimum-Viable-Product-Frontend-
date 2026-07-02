@@ -19,7 +19,6 @@ import styled, { createGlobalStyle } from 'styled-components';
 import useAppointments from '../../modules/appointments/hooks/useAppointments';
 import { useSelector }  from 'react-redux';
 
-
 // ── Hero banner (Unsplash) ──────────────────────────────────────
 const Hero = styled.div`
   position: relative;
@@ -259,10 +258,8 @@ const emptyForm = {
 // ── Component ─────────────────────────────────────────────────
 const AppointmentsPage = () => {
   const {
-    list, loading, error, success,doctors, patients,isOnline, queue, syncing, 
-    fetchAppointments, createAppointment, updateAppointment, clearStatus,fetchDropdownLists,
-     
-    
+    list, loading, error, success, isOnline, queue, syncing, patients,doctors,
+    fetchAppointments, createAppointment, updateAppointment, clearStatus, fetchDropdownLists,
   } = useAppointments();
   const { user } = useSelector((s) => s.auth);
   const isPatient = user?.role === 'patient';
@@ -273,13 +270,12 @@ const AppointmentsPage = () => {
   const [form,       setForm]       = useState(emptyForm);
   const [statusFilter, setStatusFilter] = useState('');
 
-
   useEffect(() => { 
     fetchAppointments();
     if (user?.role) {
       fetchDropdownLists(user.role); 
     }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);
 
   useEffect(() => {
     if (success) {
@@ -545,7 +541,7 @@ const AppointmentsPage = () => {
             ? isPatient ? 'Cancel Appointment' : 'Update Appointment'
             : isPatient ? 'Book Appointment' : 'New Appointment'}
         </DialogTitle>
-<DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
+        <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
 
           {editTarget && isPatient ? (
             <Typography>Are you sure you want to cancel this appointment?</Typography>
@@ -565,14 +561,15 @@ const AppointmentsPage = () => {
                       required
                     >
                       {patients.map((p) => (
-                        <MenuItem key={p.id} value={p.id}>
-                          {p.name || `ID: ${p.id}`}
+                        <MenuItem key={p.patient_id} value={p.patient_id}>
+                          {p.name || `ID: ${p.patient_id}`}
                         </MenuItem>
                       ))}
                     </TextField>
                   )}
 
                   {/* DOCTOR SELECT DROPDOWN */}
+                  {isPatient &&
                   <TextField
                     select
                     label="Select Doctor"
@@ -588,11 +585,10 @@ const AppointmentsPage = () => {
                         Dr. {d.name || d.id}
                       </MenuItem>
                     ))}
-                  </TextField>
+                  </TextField>}
                 </>
               )}
 
-              {/* ... Datepicker, Status modification and Notes remain beautifully operational ... */}
               <Box>
                 <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'text.secondary', fontWeight: 600 }}>
                   Appointment Date & Time
