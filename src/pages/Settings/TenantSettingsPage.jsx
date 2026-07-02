@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  Box, Typography, Card, CardContent, Stack, Chip,
+  Box, Typography, Card, CardContent, Stack,
   Divider, Button, CircularProgress
 } from '@mui/material';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
@@ -22,23 +22,21 @@ const TenantSettingsPage = () => {
 
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
-      <Typography variant="h5" fontWeight={700} mb={3}>
-        Tenant Settings
+      <Typography variant="h5" sx={{fontWeight:700, mb:3}}>
+        Tenant Details
       </Typography>
 
       <Card elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3, mb: 3 }}>
         <CardContent>
-          <Typography variant="subtitle2" color="text.secondary" mb={2}>
+          <Typography variant="subtitle2" sx={{color:"text.secondary" ,mb:2}}>
             Organization Details
           </Typography>
-          <Stack spacing={1.5}>
-            <Row label="Company Name" value={company_name} />
-            <Row label="Subdomain" value={`${subdomain}.lvh.me`} />
-            <Row label="Plan" value={<Chip label={plan} size="small" sx={{ textTransform: 'capitalize' }} />} />
-            <Row label="Status" value={
-              <Chip label={status} size="small" color={status === 'active' ? 'success' : 'default'} sx={{ textTransform: 'capitalize' }} />
-            } />
-          </Stack>
+            <Stack spacing={1.5}>
+              <Row label="Company Name" value={company_name} />
+              <Row label="Subdomain" value={`${subdomain}.lvh.me`} />
+              <Row label="Plan" value={plan} highlight />
+              <Row label="Status" value={status} color={status === 'active' ? 'success.main' : 'text.secondary'} />
+            </Stack>
         </CardContent>
       </Card>
 
@@ -69,10 +67,19 @@ const TenantSettingsPage = () => {
   );
 };
 
-const Row = ({ label, value }) => (
-  <Stack direction="row" justifyContent="space-between" alignItems="center">
-    <Typography variant="body2" color="text.secondary">{label}</Typography>
-    <Typography variant="body2" fontWeight={600}>{value}</Typography>
+const Row = ({ label, value, highlight, color }) => (
+  <Stack sx={{direction:"row", justifyContent:"space-between" ,alignItems:"center"}}>
+    <Typography variant="body2" sx={{color:"text.secondary", component:"span"}}>
+      {label}
+    </Typography>
+    <Typography
+      variant="body2"
+      
+      component="span"
+      sx={{ color: color || 'text.primary', textTransform: highlight ? 'capitalize' : 'none',fontWeight:600 }}
+    >
+      {value}
+    </Typography>
   </Stack>
 );
 

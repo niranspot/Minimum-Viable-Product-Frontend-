@@ -49,6 +49,16 @@ const appointmentSlice = createSlice({
     updateAppointmentSuccess: (state) => { state.loading = false; state.success = 'Appointment updated successfully'; },
     updateAppointmentFailure: (state, action) => { state.loading = false; state.error = action.payload; },
 
+    fetchDropdownListsRequest: (state) => { state.loading = true; },
+    fetchDropdownListsSuccess: (state, action) => {
+      state.loading = false;
+      state.doctors = action.payload.doctors;
+      state.patients = action.payload.patients;
+    },
+    fetchDropdownListsFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
     clearAppointmentStatus: (state) => { state.error = null; state.success = null; },
 
     fetchDropdownListsRequest: (state) => { state.loading = true; },
