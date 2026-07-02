@@ -21,6 +21,8 @@ const saveQueueToStorage = (queue) => {
 
 const initialState = {
   list:     [],
+  doctors:  [], 
+  patients: [],
   loading:  false,
   error:    null,
   success:  null,
@@ -48,6 +50,17 @@ const appointmentSlice = createSlice({
     updateAppointmentFailure: (state, action) => { state.loading = false; state.error = action.payload; },
 
     clearAppointmentStatus: (state) => { state.error = null; state.success = null; },
+
+    fetchDropdownListsRequest: (state) => { state.loading = true; },
+    fetchDropdownListsSuccess: (state, action) => {
+      state.loading = false;
+      state.doctors = action.payload.doctors;
+      state.patients = action.payload.patients;
+    },
+    fetchDropdownListsFailure: (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    },
 
     // ---------------- offline queue reducers ----------------
 
@@ -98,7 +111,7 @@ export const {
   updateAppointmentRequest, updateAppointmentSuccess, updateAppointmentFailure,
   clearAppointmentStatus,
   setNetworkStatus, queueAppointment, removeFromQueue, setQueueItemStatus,
-  syncQueueStart, syncQueueEnd,
+  syncQueueStart, syncQueueEnd, fetchDropdownListsRequest, fetchDropdownListsSuccess, fetchDropdownListsFailure,
 } = appointmentSlice.actions;
 
 export default appointmentSlice.reducer;

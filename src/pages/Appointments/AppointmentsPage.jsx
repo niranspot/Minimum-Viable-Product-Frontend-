@@ -258,8 +258,8 @@ const emptyForm = {
 // ── Component ─────────────────────────────────────────────────
 const AppointmentsPage = () => {
   const {
-    list, loading, error, success, isOnline, queue, syncing,
-    fetchAppointments, createAppointment, updateAppointment, clearStatus,
+    list, loading, error, success, isOnline, queue, syncing, patients,
+    fetchAppointments, createAppointment, updateAppointment, clearStatus, fetchDropdownLists,
   } = useAppointments();
   const { user } = useSelector((s) => s.auth);
   const isPatient = user?.role === 'patient';
@@ -270,7 +270,12 @@ const AppointmentsPage = () => {
   const [form,       setForm]       = useState(emptyForm);
   const [statusFilter, setStatusFilter] = useState('');
 
-  useEffect(() => { fetchAppointments(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { 
+    fetchAppointments();
+    if (user?.role) {
+      fetchDropdownLists(user.role); 
+    }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (success) {

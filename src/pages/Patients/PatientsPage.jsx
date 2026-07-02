@@ -229,7 +229,7 @@ const genderStyle = {
 const PatientsPage = () => {
   const {
     list, loading, error, success,
-    fetchPatients, createPatient, updatePatient, deletePatient, clearStatus,
+    fetchPatients, createPatient, updatePatient, deletePatient, clearStatus, fetchDropdownLists, patients
   } = usePatients();
 
   const [search,     setSearch]     = useState('');
@@ -239,7 +239,10 @@ const PatientsPage = () => {
   const [deleteId,   setDeleteId]   = useState(null);
   const [form,       setForm]       = useState(emptyForm);
 
-  useEffect(() => { fetchPatients(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { 
+    fetchPatients();
+    fetchDropdownLists();
+   }, []); 
 
   useEffect(() => {
     if (success) {
@@ -486,15 +489,22 @@ const PatientsPage = () => {
         </DialogTitle>
         <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: '12px !important' }}>
           {!editTarget && (
-            <TextField
-              label="User ID"
-              value={form.user_id}
-              onChange={(e) => setForm({ ...form, user_id: e.target.value })}
-              size="small"
-              fullWidth
-              required
-              helperText="Must be an active, registered user with role = patient"
-            />
+<TextField
+  select // ◄── Changes this into a dropdown select menu
+  label="Select Patient"
+  value={form.user_id} // ◄── Keeps your exact structural binding
+  onChange={(e) => setForm({ ...form, user_id: e.target.value })}
+  size="small"
+  fullWidth
+  required
+  helperText="Must be an active, registered user with role = patient"
+>
+  {patients.map((p) => (
+    <MenuItem key={p.id} value={p.id}>
+      {p.name || `Patient ID: ${p.id}`}
+    </MenuItem>
+  ))}
+</TextField>
           )}
 
           <TextField
